@@ -19,6 +19,8 @@ Implemented:
 - Per-profile performance settings: RAM, CPU core count and target FPS.
 - Per-profile graphics renderer preference.
 - GitHub Actions workflow for Windows x64 publishing.
+- Inno Setup installer definition with per-user installation, Start menu shortcut, optional desktop shortcut and uninstall support.
+- Automated Windows installer compilation and separate portable/installer build artifacts.
 
 Not implemented yet:
 - Android virtualization/runtime integration.
@@ -39,14 +41,25 @@ Not implemented yet:
 - Android runtime and ADB integration to be selected and validated in a later phase
 - GitHub Actions
 
+## Windows installer
+
+Every successful push to `main` builds two downloadable artifacts in GitHub Actions:
+
+- `FlowDroid-Setup` — Windows x64 installer (`FlowDroid-Setup-0.1.1.exe`). Installs per-user under `%LOCALAPPDATA%\\Programs\\FlowDroid`, creates a Start menu shortcut, optionally creates a desktop shortcut, and registers an uninstaller.
+- `FlowDroid-win-x64` — portable self-contained application build.
+
+The installer does not require administrator rights. Uninstalling FlowDroid does not intentionally remove profile data stored in `%LOCALAPPDATA%\\FlowDroid`.
+
 ## Build locally
 
-Requirements: Windows 10/11 and .NET 8 SDK.
+Requirements: Windows 10/11, .NET 8 SDK and Inno Setup 6.
 
 ```powershell
 dotnet restore FlowDroid.sln
 dotnet build FlowDroid.sln --configuration Release
 dotnet run --project src/FlowDroid.App/FlowDroid.App.csproj
+dotnet publish src/FlowDroid.App/FlowDroid.App.csproj --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true --output artifacts/FlowDroid
+iscc installer/FlowDroid.iss
 ```
 
 ## Product principles
