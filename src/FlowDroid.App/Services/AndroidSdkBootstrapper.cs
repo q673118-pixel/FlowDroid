@@ -126,13 +126,6 @@ public sealed class AndroidSdkBootstrapper
 
     private async Task<string> EnsureJavaAsync(IProgress<string>? progress, CancellationToken token)
     {
-        var javaOnPath = FindOnPath("java.exe");
-        if (javaOnPath is not null)
-        {
-            var home = Directory.GetParent(Directory.GetParent(javaOnPath)!.FullName)!.FullName;
-            return home;
-        }
-
         var runtimeRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "FlowDroid", "Runtime", "JDK21");
