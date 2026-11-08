@@ -48,6 +48,7 @@
                         <Button x:Name="StartAvdButton" Grid.Row="1" Grid.Column="2" Content="Запустить среду" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0" Click="StartAvd_Click"/>
                         <Button x:Name="StopAvdButton" Grid.Row="1" Grid.Column="3" Content="Остановить" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Click="StopAvd_Click" IsEnabled="False"/>
                         <Button x:Name="AutoSetupButton" Grid.Row="0" Grid.Column="2" Content="Настроить автоматически" Style="{StaticResource SecondaryButton}" Padding="12,8" Margin="10,0,0,8" Click="AutoSetup_Click"/>
+                        <Button Grid.Row="0" Grid.Column="3" Content="Диагностика" Style="{StaticResource SecondaryButton}" Padding="12,8" Margin="8,0,0,8" Click="Diagnostics_Click"/>
                     </Grid>
                 </Border>
                 <Grid Grid.Row="2" Margin="0,0,0,14">
