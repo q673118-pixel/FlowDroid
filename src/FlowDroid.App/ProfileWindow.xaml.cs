@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Compression;
+using System.Security.Cryptography;
 using System.Windows;
 using Microsoft.Win32;
 using FlowDroid.Models;
@@ -26,27 +28,63 @@ public partial class ProfileWindow : Window
 
     private void AddApk_Click(object sender, RoutedEventArgs e)
     {
-        var picker = new OpenFileDialog { Title = "Выбери APK-файлы", Filter = "Android package (*.apk)|*.apk", Multiselect = true };
+        var picker = new OpenFileDialog
+        {
+            Title = "Выбери APK-файлы",
+            Filter = "Android package (*.apk)|*.apk",
+            Multiselect = true,
+            CheckFileExists = true
+        };
         if (picker.ShowDialog(this) != true) return;
 
-        var directory = _store.GetProfileDirectory(_profile.Id);
+        var directory = _store.GetApkDirectory(_profile.Id);
         Directory.CreateDirectory(directory);
 
         foreach (var source in picker.FileNames)
         {
             var name = Path.GetFileName(source);
-            if (_apks.Any(x => string.Equals(x.FileName, name, StringComparison.OrdinalIgnoreCase))) continue;
-            var destination = Path.Combine(directory, $"{Guid.NewGuid():N}_{name}");
             try
             {
+                using (var archive = ZipFile.OpenRead(source))
+                {
+                    if (!archive.Entries.Any(entry =>
+                        string.Equals(entry.FullName, "AndroidManifest.xml", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        MessageBox.Show($"{name} не похож на корректный APK: AndroidManifest.xml не найден.",
+                            "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        continue;
+                    }
+                }
+
+                string hash;
+                using (var stream = File.OpenRead(source))
+                    hash = Convert.ToHexString(SHA256.HashData(stream));
+
+                if (_apks.Any(x => string.Equals(x.Sha256, hash, StringComparison.OrdinalIgnoreCase)))
+                    continue;
+
+                var destination = Path.Combine(directory, $"{Guid.NewGuid():N}_{name}");
                 File.Copy(source, destination);
-                _apks.Add(new ApkEntry { FileName = name, StoredPath = destination, SizeBytes = new FileInfo(destination).Length });
+                _apks.Add(new ApkEntry
+                {
+                    FileName = name,
+                    StoredPath = destination,
+                    SizeBytes = new FileInfo(destination).Length,
+                    Sha256 = hash
+                });
+            }
+            catch (InvalidDataException)
+            {
+                MessageBox.Show($"{name} не является корректным ZIP/APK-файлом.",
+                    "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Не удалось импортировать {name}.\n{ex.Message}", "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show($"Не удалось импортировать {name}.\n{ex.Message}",
+                    "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
         SaveProfile();
         RefreshState();
     }
@@ -54,21 +92,40 @@ public partial class ProfileWindow : Window
     private void RemoveApk_Click(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement { Tag: ApkEntry entry }) return;
-        if (MessageBox.Show($"Удалить {entry.FileName} из профиля и удалить импортированный файл?", "Удаление APK", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return;
-        _apks.Remove(entry);
-        try { if (File.Exists(entry.StoredPath)) File.Delete(entry.StoredPath); }
-        catch (Exception ex) { MessageBox.Show($"Не удалось удалить файл.\n{ex.Message}", "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Warning); }
-        SaveProfile();
-        RefreshState();
+        if (MessageBox.Show($"Удалить {entry.FileName} из профиля и удалить импортированный файл?",
+                "Удаление APK", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            if (File.Exists(entry.StoredPath)) File.Delete(entry.StoredPath);
+            _apks.Remove(entry);
+            SaveProfile();
+            RefreshState();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Не удалось удалить файл.\n{ex.Message}",
+                "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void Settings_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new ProfileSettingsWindow(_profile) { Owner = this };
-        if (dialog.ShowDialog() == true) { SaveProfile(); RefreshState(); }
+        if (dialog.ShowDialog() == true)
+        {
+            SaveProfile();
+            RefreshState();
+        }
     }
 
-    private void SaveProfile() { _profile.Apks = _apks.ToList(); _store.Update(_profile); }
+    private void SaveProfile()
+    {
+        _profile.Apks = _apks.ToList();
+        _store.Update(_profile);
+    }
+
     private void RefreshState()
     {
         EmptyApkState.Visibility = _apks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
