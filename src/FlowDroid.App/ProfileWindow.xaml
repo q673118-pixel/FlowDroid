@@ -12,7 +12,7 @@
         <Grid>
             <Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="*"/></Grid.RowDefinitions>
             <Grid Grid.Row="0" Background="#100D14">
-                <TextBlock Text="FlowDroid  /  Профиль" FontSize="12" FontWeight="SemiBold"
+                <TextBlock Text="FlowDroid  /  Управление профилем" FontSize="12" FontWeight="SemiBold"
                            Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" Margin="18,0"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                     <Button Style="{StaticResource WindowControlButton}" Content="&#xE921;" shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="MinimizeWindow_Click"/>
@@ -35,7 +35,7 @@
                     </StackPanel>
                 </Grid>
                 <Grid Grid.Row="1" Margin="0,0,0,14">
-                    <TextBlock Text="Приложения профиля" FontSize="17" FontWeight="SemiBold"/>
+                    <TextBlock Text="Импортированные APK" FontSize="17" FontWeight="SemiBold"/>
                     <TextBlock x:Name="ApkCountText" HorizontalAlignment="Right" VerticalAlignment="Center"
                                Foreground="{StaticResource MutedTextBrush}" FontSize="12"/>
                 </Grid>
