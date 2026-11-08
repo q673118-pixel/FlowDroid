@@ -1,5 +1,9 @@
 name: Build FlowDroid
 
+concurrency:
+  group: flowdroid-build-${{ github.ref }}
+  cancel-in-progress: true
+
 on:
   push:
     branches: [ "main" ]
