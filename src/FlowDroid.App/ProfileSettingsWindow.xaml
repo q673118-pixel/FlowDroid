@@ -1,85 +1,93 @@
 <Window x:Class="FlowDroid.ProfileSettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Настройки профиля" Width="660" Height="760" MinHeight="650"
-        WindowStartupLocation="CenterOwner" Background="{StaticResource WindowBrush}">
-    <Grid Margin="28">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel>
-                <TextBlock Text="Настройки профиля" FontSize="27" FontWeight="Bold"/>
-                <TextBlock Text="Параметры сохраняются отдельно для этого профиля. Их применение к Android-среде станет доступно после подключения движка."
-                           Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,6,0,24"/>
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="Настройки профиля" Width="700" Height="790" MinWidth="620" MinHeight="650"
+        WindowStyle="None" ResizeMode="CanResize" WindowStartupLocation="CenterOwner"
+        Background="{StaticResource WindowBrush}">
+    <shell:WindowChrome.WindowChrome>
+        <shell:WindowChrome CaptionHeight="42" ResizeBorderThickness="6" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
+    </shell:WindowChrome.WindowChrome>
+    <Border BorderBrush="#302A38" BorderThickness="1" Background="{StaticResource WindowBrush}">
+        <Grid>
+            <Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+            <Grid Grid.Row="0" Background="#100D14">
+                <TextBlock Text="FlowDroid  /  Настройки профиля" FontSize="12" FontWeight="SemiBold"
+                           Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" Margin="18,0"/>
+                <Button Content="&#xE8BB;" Width="48" Height="42" HorizontalAlignment="Right"
+                        Background="Transparent" Foreground="{StaticResource TextBrush}" BorderThickness="0"
+                        FontFamily="Segoe MDL2 Assets" FontSize="10" Cursor="Hand"
+                        shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="CloseWindow_Click">
+                    <Button.Template><ControlTemplate TargetType="Button"><Border x:Name="b" Background="Transparent"><ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/></Border><ControlTemplate.Triggers><Trigger Property="IsMouseOver" Value="True"><Setter TargetName="b" Property="Background" Value="#C42B1C"/></Trigger></ControlTemplate.Triggers></ControlTemplate></Button.Template>
+                </Button>
+            </Grid>
+            <Grid Grid.Row="1" Margin="30,24,30,24">
+                <Grid.RowDefinitions><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                        <TextBlock Text="Настройки профиля" FontSize="27" FontWeight="Bold"/>
+                        <TextBlock Text="Параметры сохраняются отдельно для этой Android-среды."
+                                   Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" Margin="0,6,0,22"/>
+                        <TextBlock Text="Экран и визуал" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,13"/>
+                        <TextBlock Text="Разрешение экрана"/>
+                        <ComboBox x:Name="ResolutionBox" Margin="0,6,0,8" Height="40" SelectionChanged="ResolutionBox_SelectionChanged">
+                            <ComboBoxItem Content="854 × 480"/><ComboBoxItem Content="1280 × 720"/>
+                            <ComboBoxItem Content="1600 × 900"/><ComboBoxItem Content="1920 × 1080"/>
+                            <ComboBoxItem Content="2560 × 1440"/><ComboBoxItem Content="Пользовательское"/>
+                        </ComboBox>
+                        <TextBox x:Name="CustomResolutionBox" Height="40" Padding="12,8" Margin="0,0,0,14"
+                                 FontSize="14" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextBrush}"
+                                 BorderBrush="{StaticResource SurfaceVariantBrush}" CaretBrush="{StaticResource TextBrush}"
+                                 ToolTip="Например: 1920x1080" Visibility="Collapsed"/>
+                        <TextBlock Text="Плотность пикселей (DPI)"/>
+                        <ComboBox x:Name="DpiBox" Margin="0,6,0,14" Height="40">
+                            <ComboBoxItem Content="120"/><ComboBoxItem Content="160"/><ComboBoxItem Content="200"/>
+                            <ComboBoxItem Content="240"/><ComboBoxItem Content="280"/><ComboBoxItem Content="320"/>
+                            <ComboBoxItem Content="360"/><ComboBoxItem Content="400"/><ComboBoxItem Content="480"/>
+                        </ComboBox>
+                        <TextBlock Text="Ориентация экрана"/>
+                        <ComboBox x:Name="OrientationBox" Margin="0,6,0,22" Height="40">
+                            <ComboBoxItem Content="Альбомная"/><ComboBoxItem Content="Книжная"/>
+                        </ComboBox>
 
-                <TextBlock Text="Экран и визуал" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,14"/>
-                <TextBlock Text="Разрешение экрана"/>
-                <ComboBox x:Name="ResolutionBox" Margin="0,6,0,8" Height="40" SelectionChanged="ResolutionBox_SelectionChanged">
-                    <ComboBoxItem Content="854 × 480"/>
-                    <ComboBoxItem Content="1280 × 720"/>
-                    <ComboBoxItem Content="1600 × 900"/>
-                    <ComboBoxItem Content="1920 × 1080"/>
-                    <ComboBoxItem Content="2560 × 1440"/>
-                    <ComboBoxItem Content="Пользовательское"/>
-                </ComboBox>
-                <TextBox x:Name="CustomResolutionBox" Height="40" Padding="12,8" Margin="0,0,0,14"
-                         FontSize="14" Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextBrush}"
-                         BorderBrush="{StaticResource SurfaceVariantBrush}" CaretBrush="{StaticResource TextBrush}"
-                         ToolTip="Например: 1920x1080" Visibility="Collapsed"/>
-                <TextBlock Text="Плотность пикселей (DPI)"/>
-                <ComboBox x:Name="DpiBox" Margin="0,6,0,14" Height="40">
-                    <ComboBoxItem Content="120"/><ComboBoxItem Content="160"/>
-                    <ComboBoxItem Content="200"/><ComboBoxItem Content="240"/>
-                    <ComboBoxItem Content="280"/><ComboBoxItem Content="320"/>
-                    <ComboBoxItem Content="360"/><ComboBoxItem Content="400"/>
-                    <ComboBoxItem Content="480"/>
-                </ComboBox>
-                <TextBlock Text="Ориентация экрана"/>
-                <ComboBox x:Name="OrientationBox" Margin="0,6,0,22" Height="40">
-                    <ComboBoxItem Content="Альбомная"/>
-                    <ComboBoxItem Content="Книжная"/>
-                </ComboBox>
-
-                <TextBlock Text="Производительность" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,14"/>
-                <TextBlock Text="Выделенная оперативная память (ГБ)"/>
-                <ComboBox x:Name="RamBox" Margin="0,6,0,14" Height="40">
-                    <ComboBoxItem Content="1"/><ComboBoxItem Content="2"/>
-                    <ComboBoxItem Content="3"/><ComboBoxItem Content="4"/>
-                    <ComboBoxItem Content="6"/><ComboBoxItem Content="8"/>
-                    <ComboBoxItem Content="12"/><ComboBoxItem Content="16"/>
-                </ComboBox>
-                <TextBlock Text="Количество ядер CPU"/>
-                <ComboBox x:Name="CpuBox" Margin="0,6,0,14" Height="40">
-                    <ComboBoxItem Content="1"/><ComboBoxItem Content="2"/>
-                    <ComboBoxItem Content="4"/><ComboBoxItem Content="6"/>
-                    <ComboBoxItem Content="8"/><ComboBoxItem Content="12"/>
-                </ComboBox>
-                <TextBlock Text="Целевая частота кадров (FPS)"/>
-                <ComboBox x:Name="FpsBox" Margin="0,6,0,14" Height="40">
-                    <ComboBoxItem Content="30"/><ComboBoxItem Content="60"/>
-                    <ComboBoxItem Content="90"/><ComboBoxItem Content="120"/>
-                    <ComboBoxItem Content="144"/>
-                </ComboBox>
-                <TextBlock Text="Графический рендерер"/>
-                <ComboBox x:Name="RendererBox" Margin="0,6,0,22" Height="40">
-                    <ComboBoxItem Content="Автоматически"/>
-                    <ComboBoxItem Content="OpenGL"/>
-                    <ComboBoxItem Content="Vulkan"/>
-                </ComboBox>
-
-                <Border Background="{StaticResource SurfaceVariantBrush}" CornerRadius="16" Padding="14" Margin="0,0,0,8">
-                    <TextBlock Text="Важно: сейчас FlowDroid сохраняет выбранные параметры в профиле. Реальное выделение CPU/RAM, смена DPI, разрешения и графического API начнут действовать после интеграции Android Runtime."
-                               Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" FontSize="12"/>
-                </Border>
-            </StackPanel>
-        </ScrollViewer>
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
-            <Button Content="Отмена" Padding="18,11" Margin="0,0,10,0"
-                    Background="{StaticResource SurfaceVariantBrush}" Foreground="{StaticResource TextBrush}"
-                    BorderThickness="0" Click="Cancel_Click"/>
-            <Button Content="Сохранить" Style="{StaticResource PrimaryButton}" Click="Save_Click"/>
-        </StackPanel>
-    </Grid>
+                        <TextBlock Text="Производительность" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,13"/>
+                        <TextBlock Text="Выделенная оперативная память (ГБ)"/>
+                        <ComboBox x:Name="RamBox" Margin="0,6,0,14" Height="40">
+                            <ComboBoxItem Content="1"/><ComboBoxItem Content="2"/><ComboBoxItem Content="3"/>
+                            <ComboBoxItem Content="4"/><ComboBoxItem Content="6"/><ComboBoxItem Content="8"/>
+                            <ComboBoxItem Content="12"/><ComboBoxItem Content="16"/>
+                        </ComboBox>
+                        <TextBlock Text="Количество ядер CPU"/>
+                        <ComboBox x:Name="CpuBox" Margin="0,6,0,14" Height="40">
+                            <ComboBoxItem Content="1"/><ComboBoxItem Content="2"/><ComboBoxItem Content="4"/>
+                            <ComboBoxItem Content="6"/><ComboBoxItem Content="8"/><ComboBoxItem Content="12"/>
+                        </ComboBox>
+                        <TextBlock Text="Целевая частота кадров (FPS)"/>
+                        <ComboBox x:Name="FpsBox" Margin="0,6,0,14" Height="40">
+                            <ComboBoxItem Content="30"/><ComboBoxItem Content="60"/><ComboBoxItem Content="90"/>
+                            <ComboBoxItem Content="120"/><ComboBoxItem Content="144"/>
+                        </ComboBox>
+                        <TextBlock Text="Графический рендерер"/>
+                        <ComboBox x:Name="RendererBox" Margin="0,6,0,18" Height="40">
+                            <ComboBoxItem Content="Автоматически"/><ComboBoxItem Content="OpenGL"/><ComboBoxItem Content="Vulkan"/>
+                        </ComboBox>
+                        <Border Background="{StaticResource SurfaceVariantBrush}" CornerRadius="14" Padding="14" Margin="0,0,0,8">
+                            <StackPanel>
+                                <TextBlock Text="Параметры пока сохраняются как настройки профиля"
+                                           FontWeight="SemiBold" FontSize="12"/>
+                                <TextBlock Text="Они начнут влиять на реальную Android-среду после подключения и настройки движка. Сейчас FlowDroid ещё не запускает APK."
+                                           Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" FontSize="12" Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,18,0,0">
+                    <Button Content="Отмена" Padding="18,11" Margin="0,0,10,0"
+                            Background="{StaticResource SurfaceVariantBrush}" Foreground="{StaticResource TextBrush}"
+                            BorderThickness="0" Click="Cancel_Click"/>
+                    <Button Content="Сохранить" Style="{StaticResource PrimaryButton}" Click="Save_Click"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
 </Window>
