@@ -1,0 +1,201 @@
+using System.Diagnostics;
+using System.IO.Compression;
+using System.Net.Http;
+using System.Text;
+
+namespace FlowDroid.Services;
+
+public sealed class AndroidSdkBootstrapper
+{
+    private const string CommandLineToolsUrl =
+        "https://dl.google.com/android/repository/commandlinetools-win-15859902_latest.zip";
+    private const string JdkUrl =
+        "https://aka.ms/download-jdk/microsoft-jdk-21-windows-x64.zip";
+
+    private readonly string _root = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "FlowDroid", "AndroidSdk");
+
+    public async Task<string> InstallAsync(
+        string profileId, IProgress<string>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        Directory.CreateDirectory(_root);
+        var java = await EnsureJavaAsync(progress, cancellationToken);
+        var sdkManager = await EnsureCommandLineToolsAsync(progress, cancellationToken);
+
+        progress?.Report("Проверка лицензий Android SDK…");
+        await RunBatchAsync(sdkManager, new[] { $"--sdk_root={_root}", "--licenses" },
+            acceptLicenses: true, java, TimeSpan.FromMinutes(3), cancellationToken);
+
+        progress?.Report("Загрузка Android Emulator, ADB и системного образа Android 16…");
+        await RunBatchAsync(sdkManager, new[]
+        {
+            $"--sdk_root={_root}",
+            "--install",
+            "platform-tools",
+            "emulator",
+            "build-tools;36.0.0",
+            "platforms;android-36",
+            "system-images;android-36;google_apis;x86_64"
+        }, acceptLicenses: true, java, TimeSpan.FromMinutes(45), cancellationToken);
+
+        var avdManager = Path.Combine(_root, "cmdline-tools", "latest", "bin", "avdmanager.bat");
+        var safeId = new string(profileId.Where(char.IsLetterOrDigit).Take(8).ToArray());
+        if (string.IsNullOrWhiteSpace(safeId)) safeId = Guid.NewGuid().ToString("N")[..8];
+        var avdName = "FlowDroid_" + safeId;
+
+        progress?.Report("Создание отдельного виртуального устройства для профиля…");
+        await RunBatchAsync(avdManager, new[]
+        {
+            "create", "avd", "--force", "--name", avdName,
+            "--package", "system-images;android-36;google_apis;x86_64"
+        }, acceptLicenses: false, java, TimeSpan.FromMinutes(5), cancellationToken);
+
+        Environment.SetEnvironmentVariable("ANDROID_HOME", _root, EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable("ANDROID_SDK_ROOT", _root, EnvironmentVariableTarget.Process);
+        progress?.Report("Android Runtime установлен. Профиль готов к запуску.");
+        return avdName;
+    }
+
+    private async Task<string> EnsureJavaAsync(IProgress<string>? progress, CancellationToken token)
+    {
+        var javaOnPath = FindOnPath("java.exe");
+        if (javaOnPath is not null)
+        {
+            var home = Directory.GetParent(Directory.GetParent(javaOnPath)!.FullName)!.FullName;
+            return home;
+        }
+
+        var runtimeRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "FlowDroid", "Runtime", "JDK21");
+        var existing = Directory.Exists(runtimeRoot)
+            ? Directory.EnumerateFiles(runtimeRoot, "java.exe", SearchOption.AllDirectories).FirstOrDefault()
+            : null;
+        if (existing is not null) return Directory.GetParent(Directory.GetParent(existing)!.FullName)!.FullName;
+
+        progress?.Report("Загрузка Java 21 Runtime (нужен для Android SDK)…");
+        var archive = Path.Combine(Path.GetTempPath(), "flowdroid-jdk21.zip");
+        await DownloadAsync(JdkUrl, archive, progress, token);
+        Directory.CreateDirectory(runtimeRoot);
+        ZipFile.ExtractToDirectory(archive, runtimeRoot, overwriteFiles: true);
+        File.Delete(archive);
+
+        var java = Directory.EnumerateFiles(runtimeRoot, "java.exe", SearchOption.AllDirectories).FirstOrDefault();
+        if (java is null) throw new InvalidOperationException("В загруженном Java Runtime не найден java.exe.");
+        var javaHome = Directory.GetParent(Directory.GetParent(java)!.FullName)!.FullName;
+        Environment.SetEnvironmentVariable("JAVA_HOME", javaHome, EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable("PATH",
+            Path.Combine(javaHome, "bin") + Path.PathSeparator +
+            Environment.GetEnvironmentVariable("PATH"), EnvironmentVariableTarget.Process);
+        return javaHome;
+    }
+
+    private async Task<string> EnsureCommandLineToolsAsync(IProgress<string>? progress, CancellationToken token)
+    {
+        var bin = Path.Combine(_root, "cmdline-tools", "latest", "bin");
+        var sdkManager = Path.Combine(bin, "sdkmanager.bat");
+        if (File.Exists(sdkManager)) return sdkManager;
+
+        progress?.Report("Загрузка официальных Android SDK Command-line Tools…");
+        var archive = Path.Combine(Path.GetTempPath(), "flowdroid-commandlinetools.zip");
+        var extract = Path.Combine(Path.GetTempPath(), "flowdroid-commandlinetools");
+        if (Directory.Exists(extract)) Directory.Delete(extract, true);
+        await DownloadAsync(CommandLineToolsUrl, archive, progress, token);
+        ZipFile.ExtractToDirectory(archive, extract, overwriteFiles: true);
+        File.Delete(archive);
+
+        var source = Path.Combine(extract, "cmdline-tools");
+        if (!Directory.Exists(source))
+            throw new InvalidOperationException("Архив Android SDK Tools имеет неожиданную структуру.");
+        Directory.CreateDirectory(Path.GetDirectoryName(bin)!);
+        if (Directory.Exists(Path.Combine(_root, "cmdline-tools", "latest")))
+            Directory.Delete(Path.Combine(_root, "cmdline-tools", "latest"), true);
+        Directory.Move(source, Path.Combine(_root, "cmdline-tools", "latest"));
+        Directory.Delete(extract, true);
+        if (!File.Exists(sdkManager))
+            throw new InvalidOperationException("Не удалось подготовить sdkmanager.bat.");
+        return sdkManager;
+    }
+
+    private static async Task DownloadAsync(
+        string url, string destination, IProgress<string>? progress, CancellationToken token)
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(30) };
+        using var response = await client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, token);
+        response.EnsureSuccessStatusCode();
+        var total = response.Content.Headers.ContentLength;
+        await using var input = await response.Content.ReadAsStreamAsync(token);
+        await using var output = new FileStream(destination, FileMode.Create, FileAccess.Write, FileShare.None, 81920, true);
+        var buffer = new byte[81920];
+        long received = 0;
+        int read;
+        while ((read = await input.ReadAsync(buffer, token)) > 0)
+        {
+            await output.WriteAsync(buffer.AsMemory(0, read), token);
+            received += read;
+            if (total is > 0)
+                progress?.Report($"Загрузка компонентов… {received * 100 / total.Value}%");
+        }
+    }
+
+    private static async Task RunBatchAsync(
+        string batchFile, IEnumerable<string> arguments, bool acceptLicenses,
+        string javaHome, TimeSpan timeout, CancellationToken token)
+    {
+        var command = new StringBuilder().Append('"').Append(batchFile).Append('"');
+        foreach (var argument in arguments)
+            command.Append(' ').Append('"').Append(argument.Replace("\"", "\\\"")).Append('"');
+
+        var start = new ProcessStartInfo("cmd.exe")
+        {
+            UseShellExecute = false,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+            WorkingDirectory = Path.GetDirectoryName(batchFile)!
+        };
+        start.ArgumentList.Add("/d");
+        start.ArgumentList.Add("/c");
+        start.ArgumentList.Add(command.ToString());
+        start.Environment["JAVA_HOME"] = javaHome;
+        start.Environment["PATH"] = Path.Combine(javaHome, "bin") + Path.PathSeparator +
+                                    Environment.GetEnvironmentVariable("PATH");
+
+        using var process = new Process { StartInfo = start };
+        var output = new StringBuilder();
+        process.OutputDataReceived += (_, e) => { if (e.Data is not null) output.AppendLine(e.Data); };
+        process.ErrorDataReceived += (_, e) => { if (e.Data is not null) output.AppendLine(e.Data); };
+        if (!process.Start()) throw new InvalidOperationException("Не удалось запустить Android SDK Manager.");
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+
+        if (acceptLicenses)
+            await process.StandardInput.WriteAsync(string.Concat(Enumerable.Repeat("y\n", 50)));
+        else
+            await process.StandardInput.WriteLineAsync("no");
+        process.StandardInput.Close();
+
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+        timeoutCts.CancelAfter(timeout);
+        try { await process.WaitForExitAsync(timeoutCts.Token); }
+        catch (OperationCanceledException) when (!token.IsCancellationRequested)
+        {
+            try { process.Kill(entireProcessTree: true); } catch { }
+            throw new TimeoutException("Установка Android Runtime превысила допустимое время.");
+        }
+
+        if (process.ExitCode != 0)
+            throw new InvalidOperationException("Android SDK Manager завершился с ошибкой:\n" + output);
+    }
+
+    private static string? FindOnPath(string executable)
+    {
+        var path = Environment.GetEnvironmentVariable("PATH");
+        return path?.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Select(folder => Path.Combine(folder.Trim(), executable))
+            .FirstOrDefault(File.Exists);
+    }
+}
