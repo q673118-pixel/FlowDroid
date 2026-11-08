@@ -38,7 +38,7 @@
                         BorderThickness="1" CornerRadius="16" Padding="15" Margin="0,0,0,18">
                     <Grid>
                         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                         <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,12">
                             <TextBlock Text="Android Runtime" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock x:Name="RuntimeStatusText" Text="Проверка Android Runtime…" FontSize="11" Foreground="{StaticResource MutedTextBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
@@ -46,6 +46,7 @@
                         <ComboBox x:Name="AvdComboBox" Grid.Row="1" Grid.Column="0" Height="42" VerticalContentAlignment="Center" SelectionChanged="AvdComboBox_SelectionChanged"/>
                         <Button Grid.Row="1" Grid.Column="1" Content="Обновить" Style="{StaticResource SecondaryButton}" Margin="10,0,0,0" Click="RefreshAvds_Click"/>
                         <Button x:Name="StartAvdButton" Grid.Row="1" Grid.Column="2" Content="Запустить среду" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0" Click="StartAvd_Click"/>
+                        <Button x:Name="StopAvdButton" Grid.Row="1" Grid.Column="3" Content="Остановить" Style="{StaticResource SecondaryButton}" Margin="8,0,0,0" Click="StopAvd_Click" IsEnabled="False"/>
                         <Button x:Name="AutoSetupButton" Grid.Row="0" Grid.Column="2" Content="Настроить автоматически" Style="{StaticResource SecondaryButton}" Padding="12,8" Margin="10,0,0,8" Click="AutoSetup_Click"/>
                     </Grid>
                 </Border>
