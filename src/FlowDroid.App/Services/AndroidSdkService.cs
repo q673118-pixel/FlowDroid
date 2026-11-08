@@ -59,8 +59,9 @@ public sealed class AndroidSdkService
     {
         var candidates = new[]
         {
-            Environment.GetEnvironmentVariable("ANDROID_SDK_ROOT"),
             Environment.GetEnvironmentVariable("ANDROID_HOME"),
+            Environment.GetEnvironmentVariable("ANDROID_SDK_ROOT"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FlowDroid", "AndroidSdk"),
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Android", "Sdk")
         };
 
@@ -81,24 +82,58 @@ public sealed class AndroidSdkService
         return result.StandardOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
-    public async Task StartAvdAsync(string avdName, CancellationToken cancellationToken = default)
+    public async Task StartAvdAsync(
+        string avdName, int ramGb, int cpuCores, string resolution, int dpi,
+        string renderer, string orientation, CancellationToken cancellationToken = default)
     {
         EnsureRuntime();
-        if (string.IsNullOrWhiteSpace(avdName)) throw new InvalidOperationException("Сначала выбери Android Virtual Device (AVD).");
+        if (string.IsNullOrWhiteSpace(avdName))
+            throw new InvalidOperationException("Сначала выбери Android Virtual Device (AVD).");
 
         var start = new ProcessStartInfo(EmulatorPath!)
         {
             UseShellExecute = false,
             CreateNoWindow = true
         };
-        start.ArgumentList.Add("-avd");
-        start.ArgumentList.Add(avdName);
-        start.ArgumentList.Add("-no-snapshot-load");
+        var gpuMode = renderer switch
+        {
+            "Аппаратный" => "host",
+            "Программный" => "swiftshader_indirect",
+            _ => "auto"
+        };
+        foreach (var argument in new[]
+        {
+            "-avd", avdName,
+            "-no-snapshot-load",
+            "-no-boot-anim",
+            "-memory", (Math.Clamp(ramGb, 1, 16) * 1024).ToString(),
+            "-cores", Math.Clamp(cpuCores, 1, 12).ToString(),
+            "-gpu", gpuMode
+        })
+            start.ArgumentList.Add(argument);
 
         var process = Process.Start(start);
         if (process is null) throw new InvalidOperationException("Не удалось запустить Android Emulator.");
 
-        await WaitForBootAsync(TimeSpan.FromMinutes(3), cancellationToken);
+        var serial = await WaitForBootAsync(TimeSpan.FromMinutes(5), cancellationToken);
+        var dimensions = Regex.Match(resolution, @"(\d+)\s*[×x]\s*(\d+)");
+        if (dimensions.Success)
+        {
+            var width = dimensions.Groups[1].Value;
+            var height = dimensions.Groups[2].Value;
+            if (string.Equals(orientation, "Книжная", StringComparison.OrdinalIgnoreCase) &&
+                int.Parse(width) > int.Parse(height))
+                (width, height) = (height, width);
+            await RunAsync(AdbPath!, new[] { "-s", serial, "shell", "wm", "size", width + "x" + height },
+                TimeSpan.FromSeconds(15), cancellationToken);
+        }
+        await RunAsync(AdbPath!, new[] { "-s", serial, "shell", "wm", "density", Math.Clamp(dpi, 120, 640).ToString() },
+            TimeSpan.FromSeconds(15), cancellationToken);
+        await RunAsync(AdbPath!, new[] { "-s", serial, "shell", "settings", "put", "system", "accelerometer_rotation", "0" },
+            TimeSpan.FromSeconds(15), cancellationToken);
+        await RunAsync(AdbPath!, new[] { "-s", serial, "shell", "settings", "put", "system", "user_rotation",
+            string.Equals(orientation, "Книжная", StringComparison.OrdinalIgnoreCase) ? "0" : "1" },
+            TimeSpan.FromSeconds(15), cancellationToken);
     }
 
     public async Task<string> WaitForBootAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
