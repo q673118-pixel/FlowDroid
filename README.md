@@ -4,7 +4,7 @@ FlowDroid is a Windows desktop application for managing isolated Android profile
 
 ## Current status
 
-**Version:** 0.1.1 — profile and settings prototype.
+**Version:** 0.2.0 — redesigned desktop UI and profile management prototype.
 
 Implemented:
 - C# / WPF desktop shell targeting .NET 8 for Windows.
