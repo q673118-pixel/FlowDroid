@@ -257,13 +257,13 @@ public sealed class AndroidSdkService
     private void EnsureRuntime()
     {
         if (!IsAvailable)
-            throw new InvalidOperationException("Android SDK Emulator или Platform-Tools не найдены. Установи Android Studio и Android SDK, затем проверь ANDROID_SDK_ROOT.");
+            throw new InvalidOperationException("Android SDK Emulator или Platform-Tools не найдены. Открой профиль и нажми «Настроить автоматически».");
     }
 
     private void EnsureAdb()
     {
         if (AdbPath is null)
-            throw new InvalidOperationException("ADB не найден. Установи Android SDK Platform-Tools и проверь ANDROID_SDK_ROOT.");
+            throw new InvalidOperationException("ADB не найден. Открой профиль и выполни автоматическую настройку Android Runtime.");
     }
 
     private static async Task<ProcessResult> RunAsync(
