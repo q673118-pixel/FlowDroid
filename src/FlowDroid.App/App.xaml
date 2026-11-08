@@ -28,13 +28,13 @@
         <Duration x:Key="MotionEmphasis">0:0:0.30</Duration>
 
         <Style TargetType="Window">
-            <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI"/>
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}"/>
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
             <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
         </Style>
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="FontFamily" Value="Segoe UI Variable Display, Segoe UI"/>
+            <Setter Property="FontFamily" Value="{DynamicResource AppFontFamily}"/>
             <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
         </Style>
 
