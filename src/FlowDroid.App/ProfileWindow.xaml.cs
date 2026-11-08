@@ -51,6 +51,7 @@ public partial class ProfileWindow : Window
 
     private async void ProfileWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        MotionService.Show(ProfileContentRoot, 220, 9);
         await RefreshAvdsAsync();
     }
 
@@ -302,7 +303,10 @@ public partial class ProfileWindow : Window
 
     private void RefreshState()
     {
-        EmptyApkState.Visibility = _apks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        if (_apks.Count == 0 && EmptyApkState.Visibility != Visibility.Visible)
+            MotionService.Show(EmptyApkState, 180, 6);
+        else if (_apks.Count > 0 && EmptyApkState.Visibility == Visibility.Visible)
+            MotionService.Hide(EmptyApkState);
         ApkCountText.Text = _apks.Count switch { 1 => "1 APK", >= 2 and <= 4 => $"{_apks.Count} APK", _ => $"{_apks.Count} APK" };
         ProfileSubtitle.Text = $"{_profile.AndroidVersion} · {_profile.Resolution} · {_profile.RamGb} ГБ RAM";
     }
