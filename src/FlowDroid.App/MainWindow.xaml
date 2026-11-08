@@ -21,12 +21,12 @@
                     </StackPanel>
                     <TextBlock Text="РАБОЧЕЕ ПРОСТРАНСТВО" FontSize="10" FontWeight="Bold" Foreground="{StaticResource MutedTextBrush}" Margin="12,0,0,12"/>
                     <Button Style="{StaticResource NavButton}" Background="{StaticResource SurfaceVariantBrush}" Foreground="{StaticResource TextBrush}" Content="  Профили" Margin="0,0,0,5"/>
-                    <Button Style="{StaticResource NavButton}" Content="  Приложения" Margin="0,0,0,5"/>
-                    <Button Style="{StaticResource NavButton}" Content="  Файлы" Margin="0,0,0,5"/>
+                    <Button Style="{StaticResource NavButton}" Content="  Приложения" Margin="0,0,0,5" IsEnabled="False" ToolTip="Общий каталог появится после подключения Android Runtime."/>
+                    <Button Style="{StaticResource NavButton}" Content="  Файлы" Margin="0,0,0,5" IsEnabled="False" ToolTip="Файловый обмен появится после подключения Android Runtime."/>
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom">
-                    <Button Style="{StaticResource NavButton}" Content="  Настройки"/>
-                    <TextBlock Text="Версия 0.1.0" FontSize="10" Foreground="{StaticResource MutedTextBrush}" Margin="12,14,0,4"/>
+                    <Button Style="{StaticResource NavButton}" Content="  Настройки" IsEnabled="False" ToolTip="Глобальные настройки будут добавлены отдельным этапом."/>
+                    <TextBlock Text="Версия 0.1.1" FontSize="10" Foreground="{StaticResource MutedTextBrush}" Margin="12,14,0,4"/>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -60,7 +60,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate DataType="{x:Type models:EmulatorProfile}">
-                                <Border Width="270" Background="{StaticResource SurfaceBrush}" CornerRadius="22" Padding="18" Margin="0,0,14,14">
+                                <Border Width="286" Background="{StaticResource SurfaceBrush}" CornerRadius="22" Padding="18" Margin="0,0,14,14">
                                     <StackPanel>
                                         <Border Width="44" Height="44" CornerRadius="14" Background="{StaticResource SurfaceVariantBrush}" HorizontalAlignment="Left">
                                             <TextBlock Text="▣" FontSize="22" Foreground="{StaticResource AccentHoverBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -68,7 +68,14 @@
                                         <TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" Margin="0,13,0,3"/>
                                         <TextBlock Text="{Binding AndroidVersion}" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
                                         <TextBlock Text="{Binding InstalledApkCount, StringFormat={}{0} APK}" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,14"/>
-                                        <Button Style="{StaticResource PrimaryButton}" Content="Открыть профиль" HorizontalAlignment="Stretch" Click="OpenProfile_Click" Tag="{Binding}"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Button Style="{StaticResource PrimaryButton}" Content="Открыть" HorizontalAlignment="Stretch" Margin="0,0,8,0" Click="OpenProfile_Click" Tag="{Binding}"/>
+                                            <Button Grid.Column="1" Content="Удалить" Padding="12,10" Background="{StaticResource SurfaceVariantBrush}" Foreground="{StaticResource TextBrush}" BorderThickness="0" Click="DeleteProfile_Click" Tag="{Binding}"/>
+                                        </Grid>
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
