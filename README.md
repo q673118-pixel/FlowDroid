@@ -1,93 +1,67 @@
 # FlowDroid
 
-FlowDroid is a Windows desktop application for managing Android profiles and opening user-provided APKs in app-first Windows windows.
+FlowDroid is a Windows desktop app for creating Android profiles and launching imported APKs in separate Windows windows.
 
-## Current status
+## Version 0.4.0
 
-**Version:** 0.3.0 — rounded MathFlow-inspired desktop UI and first Android Emulator / ADB / scrcpy launch path.
+### Implemented
+- Dark Material-inspired interface aligned with MathFlow: solid near-black surfaces, restrained purple accent, rounded cards and controls.
+- Custom title bars, native Windows 11 rounded corners and rounded window regions on Windows 10.
+- Custom dark ComboBox dropdowns, text fields, buttons, lists and popup surfaces (no white system dropdowns).
+- Profile creation, persistent settings and isolated per-profile APK storage.
+- APK import, ZIP/manifest validation, SHA-256 duplicate detection and removal.
+- One-click Android Runtime provisioning without Android Studio:
+  - Microsoft OpenJDK 21
+  - Official Android SDK Command-line Tools
+  - Android Emulator, ADB, Build-Tools and Android 16 x86_64 Google APIs system image
+  - An AVD generated for each FlowDroid profile
+  - Official scrcpy Windows x64 release for independent app windows
+- Android Emulator startup with per-profile RAM, CPU cores and graphics mode.
+- Android display size, density and orientation applied after boot.
+- APK package metadata extraction, ADB install and app launch.
+- scrcpy virtual display with per-app window title, selected resolution, DPI and target FPS.
+- Self-contained Windows x64 publishing and Inno Setup installer.
 
-Implemented:
-- C# / WPF desktop application targeting .NET 8 for Windows.
-- Unified dark Material 3 visual system aligned with MathFlow: near-black surfaces, restrained purple accent, rounded controls and clear typography.
-- Rounded top-level windows on Windows 10 and native rounded corners on Windows 11.
-- Custom dark title bars and window controls.
-- Persistent profiles in `%LOCALAPPDATA%/FlowDroid/profiles.json`.
-- Profile creation, duplicate-name protection and profile deletion.
-- Separate per-profile APK storage, multi-select import and SHA-256 duplicate detection.
-- APK archive validation and file-size display.
-- Per-profile resolution, DPI, orientation, RAM, CPU, FPS and renderer preferences.
-- Android SDK discovery through `ANDROID_SDK_ROOT`, `ANDROID_HOME` and the standard Windows SDK directory.
-- Android Virtual Device discovery and launch through Android Emulator.
-- ADB boot readiness checks and APK installation.
-- APK package-name extraction using Android SDK Build-Tools (`aapt`).
-- App launch through ADB; optional scrcpy virtual-display windows when a compatible scrcpy installation is detected.
-- Windows x64 self-contained publishing and Inno Setup installer generation through GitHub Actions.
+### Automatic Android setup
 
-Not implemented yet:
-- Automatic download and installation of Android SDK components or scrcpy.
-- Guaranteed one-AVD-per-profile lifecycle and full isolation of simultaneously running profiles.
-- Applying every saved RAM / CPU / graphics-renderer preference to the Android Emulator process.
-- Native WPF hosting of Android app surfaces; separate app windows are currently provided by scrcpy.
-- APK icon extraction, rich package metadata, app permissions and version display.
-- Hardware benchmarking and automatic resource recommendations.
+Open a profile and choose **Настроить автоматически**. FlowDroid downloads the required components into:
 
-## Android runtime setup
+`%LOCALAPPDATA%\FlowDroid\AndroidSdk`
 
-FlowDroid uses the official Android SDK tools already installed on the computer. Install these components through Android Studio's SDK Manager:
-- Android SDK Platform-Tools (ADB)
-- Android Emulator
-- Android SDK Build-Tools (includes `aapt`)
-- At least one Android Virtual Device (AVD)
+The JDK is stored under:
 
-FlowDroid detects the SDK from `ANDROID_SDK_ROOT`, `ANDROID_HOME` or the default Windows SDK directory under the user's local application data.
+`%LOCALAPPDATA%\FlowDroid\Runtime\JDK21`
 
-To open each APK in its own Windows window, install a compatible Windows build of [scrcpy from its official repository](https://github.com/Genymobile/scrcpy). Extract the complete scrcpy folder to:
+scrcpy is stored under:
 
-`%LOCALAPPDATA%\FlowDroid\Tools\scrcpy\`
+`%LOCALAPPDATA%\FlowDroid\Tools\scrcpy`
 
-The folder must contain `scrcpy.exe` and its companion files. FlowDroid checks for the `--new-display` and `--start-app` options before using the separate-window mode.
+Android Studio is not required. The first setup is a large download (several GB); a stable internet connection and several GB of free disk space are required. Android SDK license terms are shown before setup and must be accepted. Hardware virtualization must be enabled for acceptable emulator performance.
 
-If scrcpy is not available, FlowDroid installs and launches the APK inside the Android Emulator window instead.
+### Launching APKs
 
-## Launch an APK
+1. Create a profile.
+2. Open it and click **Настроить автоматически** if Android Runtime is not installed.
+3. Wait for the Android SDK, system image, AVD and scrcpy setup to finish.
+4. Click **Запустить среду** and wait for Android to boot.
+5. Import an APK, select it and choose **Установить и запустить**.
 
-1. Create a FlowDroid profile.
-2. Open the profile and choose an existing AVD.
-3. Start the Android environment and wait until it finishes booting.
-4. Import one or more APK files.
-5. Select an APK and choose **Install and launch**.
+When a compatible scrcpy virtual display is available, the app opens in its own Windows window. The Android Emulator remains the underlying runtime. This is not native WPF rendering of Android apps.
 
-The first Android boot can take several minutes. Android Emulator acceleration depends on the host computer's virtualization configuration.
+### Known limitations
+- Android Emulator compatibility and speed depend on the host CPU, graphics drivers and enabled virtualization.
+- The first Android boot and first component download can take several minutes.
+- Android 16 Google APIs x86_64 is the default runtime image; some ARM-only apps or apps requiring Google Play certification may not work.
+- Multiple profiles receive separate AVD definitions, but simultaneous heavy emulator sessions are limited by host resources.
+- The profile graphics selector maps to Android Emulator's supported auto, host and SwiftShader modes; Vulkan is not exposed as a separate guaranteed backend.
+- Some apps with DRM, anti-cheat, hardware attestation or device-specific requirements may refuse to run in an emulator.
 
-## Windows installer
+## Build
 
-Every successful push to `main` builds two downloadable artifacts in GitHub Actions:
+Requirements: Windows 10/11 and .NET 8 SDK. The GitHub Actions workflow creates:
+- `FlowDroid-Setup`: per-user Windows installer.
+- `FlowDroid-win-x64`: portable self-contained build.
 
-- `FlowDroid-Setup` — Windows x64 installer (`FlowDroid-Setup-0.3.0.exe`). Installs per-user under `%LOCALAPPDATA%\Programs\FlowDroid`, creates a Start menu shortcut, optionally creates a desktop shortcut, and registers an uninstaller.
-- `FlowDroid-win-x64` — portable self-contained application build.
+## Repository
 
-The installer includes Russian and English UI and does not require administrator rights. Uninstalling FlowDroid does not intentionally remove profile data stored in `%LOCALAPPDATA%\FlowDroid`.
-
-## Build locally
-
-Requirements: Windows 10/11, .NET 8 SDK and Inno Setup 6.
-
-```powershell
-dotnet restore FlowDroid.sln
-dotnet build FlowDroid.sln --configuration Release
-dotnet run --project src/FlowDroid.App/FlowDroid.App.csproj
-dotnet publish src/FlowDroid.App/FlowDroid.App.csproj --configuration Release --runtime win-x64 --self-contained true -p:PublishSingleFile=true --output artifacts/FlowDroid
-iscc installer/FlowDroid.iss
-```
-
-## Product principles
-
-- Profiles represent Android environments, not just folders of APKs.
-- Users import their own APKs.
-- The target experience is app-first: launch selected apps directly in separate Windows windows where scrcpy virtual displays are supported.
-- Performance, compatibility and stability take priority over decoration.
-- Visual language: solid surfaces, rounded controls, restrained purple accents. No glass effects, glow or gratuitous gradients.
-
-## License
-
-No license has been selected. Until one is added, the repository remains subject to default copyright rules.
+https://github.com/q673118-pixel/FlowDroid
