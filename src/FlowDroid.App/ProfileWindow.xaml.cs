@@ -103,6 +103,12 @@ public partial class ProfileWindow : Window
     }
 
 
+    private void Diagnostics_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new RuntimeDiagnosticsWindow(_android) { Owner = this };
+        dialog.ShowDialog();
+    }
+
     private async void AutoSetup_Click(object sender, RoutedEventArgs e)
     {
         var answer = MessageBox.Show(
