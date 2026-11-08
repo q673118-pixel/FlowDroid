@@ -1,0 +1,17 @@
+<UserControl x:Class="FlowDroid.Controls.AndroidMark"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Name="Self" IsHitTestVisible="False" Focusable="False">
+    <!-- Simple vector Android head: dome, two eyes, two antennas. Drawn from primitives, scales to any width. -->
+    <Viewbox Stretch="Uniform">
+        <Canvas Width="200" Height="130">
+            <Line X1="52" Y1="14" X2="74" Y2="62" Stroke="{Binding Fill, ElementName=Self}"
+                  StrokeThickness="11" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+            <Line X1="148" Y1="14" X2="126" Y2="62" Stroke="{Binding Fill, ElementName=Self}"
+                  StrokeThickness="11" StrokeStartLineCap="Round" StrokeEndLineCap="Round"/>
+            <Path Data="M 8,128 A 92,70 0 0 1 192,128 Z" Fill="{Binding Fill, ElementName=Self}"/>
+            <Ellipse Canvas.Left="62" Canvas.Top="86" Width="18" Height="18" Fill="{Binding EyeBrush, ElementName=Self}"/>
+            <Ellipse Canvas.Left="120" Canvas.Top="86" Width="18" Height="18" Fill="{Binding EyeBrush, ElementName=Self}"/>
+        </Canvas>
+    </Viewbox>
+</UserControl>

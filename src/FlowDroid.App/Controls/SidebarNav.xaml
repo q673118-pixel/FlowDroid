@@ -1,0 +1,51 @@
+<UserControl x:Class="FlowDroid.Controls.SidebarNav"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:FlowDroid.Controls"
+             Focusable="False">
+    <Grid x:Name="OverlayRoot">
+        <!-- Active-item pill. Lives behind the items and slides between them (see SidebarNav.xaml.cs). -->
+        <Border x:Name="Indicator" Height="52" Margin="20,0" VerticalAlignment="Top" CornerRadius="26"
+                Background="{DynamicResource AccentBrush}" IsHitTestVisible="False">
+            <Border.RenderTransform>
+                <TranslateTransform x:Name="IndicatorTransform"/>
+            </Border.RenderTransform>
+        </Border>
+
+        <Grid Margin="20,28,20,22">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Brand -->
+            <StackPanel Orientation="Horizontal" Margin="12,0,0,34">
+                <ui:AndroidMark Width="48" VerticalAlignment="Center"
+                                Fill="{DynamicResource AccentBrightBrush}" EyeBrush="{DynamicResource NavSurfaceBrush}"/>
+                <TextBlock Text="FlowDroid" FontSize="24" FontWeight="SemiBold" Margin="14,0,0,0" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Main navigation -->
+            <StackPanel Grid.Row="1">
+                <RadioButton x:Name="HomeItem" Style="{DynamicResource NavItem}" GroupName="FlowDroidNav" Content="Главная"
+                             Tag="home" ui:Ui.Glyph="&#xE80F;" IsChecked="True" Checked="NavItem_Checked"/>
+                <RadioButton Style="{DynamicResource NavItem}" GroupName="FlowDroidNav" Content="Профили"
+                             Tag="profiles" ui:Ui.Glyph="&#xE8EA;" Checked="NavItem_Checked"/>
+                <RadioButton Style="{DynamicResource NavItem}" GroupName="FlowDroidNav" Content="Приложения"
+                             Tag="apps" ui:Ui.Glyph="&#xE80A;" Checked="NavItem_Checked"/>
+                <RadioButton Style="{DynamicResource NavItem}" GroupName="FlowDroidNav" Content="Файлы"
+                             Tag="files" ui:Ui.Glyph="&#xE8B7;" Checked="NavItem_Checked"/>
+                <RadioButton Style="{DynamicResource NavItem}" GroupName="FlowDroidNav" Content="Настройки"
+                             Tag="settings" ui:Ui.Glyph="&#xE713;" Checked="NavItem_Checked"/>
+            </StackPanel>
+
+            <!-- Footer -->
+            <StackPanel Grid.Row="2">
+                <Border Height="1" Margin="8,0,8,16" Background="{DynamicResource OutlineBrush}"/>
+                <RadioButton Style="{DynamicResource NavItem}" GroupName="FlowDroidNav" Content="О программе"
+                             Margin="0" Tag="about" ui:Ui.Glyph="&#xE946;" Checked="NavItem_Checked"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

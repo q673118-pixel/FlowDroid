@@ -16,11 +16,27 @@ public sealed class ProfileStore
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FlowDroid");
     private string FilePath => Path.Combine(_directory, "profiles.json");
 
+    /// <summary>Set when the last <see cref="Load"/> had to recover from an unreadable profiles file.</summary>
+    public string? LastLoadWarning { get; private set; }
+
     public IReadOnlyList<EmulatorProfile> Load()
     {
+        LastLoadWarning = null;
         if (!File.Exists(FilePath)) return Array.Empty<EmulatorProfile>();
-        return JsonSerializer.Deserialize<List<EmulatorProfile>>(File.ReadAllText(FilePath), JsonOptions)
-               ?? new List<EmulatorProfile>();
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<EmulatorProfile>>(File.ReadAllText(FilePath), JsonOptions)
+                   ?? new List<EmulatorProfile>();
+        }
+        catch (JsonException)
+        {
+            // Keep the unreadable file for manual recovery instead of blocking startup forever.
+            var backup = Path.Combine(_directory, $"profiles.corrupt-{DateTime.Now:yyyyMMdd-HHmmss}.json");
+            File.Copy(FilePath, backup, overwrite: true);
+            LastLoadWarning = $"Файл профилей повреждён. Копия сохранена: {backup}";
+            return Array.Empty<EmulatorProfile>();
+        }
     }
 
     public void Save(IEnumerable<EmulatorProfile> profiles)

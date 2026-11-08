@@ -1,127 +1,90 @@
-using System.Collections.ObjectModel;
 using System.Windows;
-using FlowDroid.Models;
+using System.Windows.Controls;
+using System.Windows.Media.Animation;
+using FlowDroid.Animation;
 using FlowDroid.Services;
+using FlowDroid.ViewModels;
+using FlowDroid.Views;
 
 namespace FlowDroid;
 
 public partial class MainWindow : Window
 {
-    private readonly ObservableCollection<EmulatorProfile> _profiles = new();
-    private readonly ProfileStore _profileStore = new();
+    private readonly Dictionary<string, UserControl> _views = new();
+    private int _navigationToken;
 
     public MainWindow()
     {
         InitializeComponent();
-        WindowAppearance.Apply(this);
-        ProfilesList.ItemsSource = _profiles;
-        LoadProfiles();
-        UpdateProfileCount();
+        DataContext = new MainViewModel(new DialogService());
+        Host.Content = GetView("home");
+        StateChanged += (_, _) =>
+            Frame.Padding = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
     }
 
-    private void MinimizeWindow_Click(object sender, RoutedEventArgs e)
+    private void Nav_Navigated(object? sender, string key)
     {
-        WindowState = WindowState.Minimized;
+        if (!IsLoaded) return;
+        var next = GetView(key);
+        if (ReferenceEquals(Host.Content, next)) return;
+        _ = SwitchAsync(next);
     }
 
-    private void MaximizeWindow_Click(object sender, RoutedEventArgs e)
+    // Old content fades out quickly, the new one fades in with a small upward shift.
+    // The token makes a newer click win over a transition that is still running.
+    private async Task SwitchAsync(UserControl next)
     {
-        WindowState = WindowState == WindowState.Maximized
-            ? WindowState.Normal
-            : WindowState.Maximized;
-        UpdateMaximizeButton();
-    }
+        var token = ++_navigationToken;
 
-    private void CloseWindow_Click(object sender, RoutedEventArgs e)
-    {
-        Close();
-    }
-
-    private void MainWindow_StateChanged(object? sender, EventArgs e)
-    {
-        UpdateMaximizeButton();
-    }
-
-    private void UpdateMaximizeButton()
-    {
-        if (MaximizeButton is not null)
-            MaximizeButton.Content = WindowState == WindowState.Maximized ? "\uE923" : "\uE922";
-    }
-
-    private void LoadProfiles()
-    {
-        try
+        if (Motion.Enabled)
         {
-            foreach (var profile in _profileStore.Load())
-            {
-                profile.Apks ??= new List<ApkEntry>();
-                _profiles.Add(profile);
-            }
+            var fadeOut = new DoubleAnimation(0, Motion.FadeOut) { EasingFunction = Motion.EaseIn };
+            Host.BeginAnimation(OpacityProperty, fadeOut);
+            await Task.Delay(Motion.FadeOut.TimeSpan);
+            if (token != _navigationToken) return;
         }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Не удалось загрузить профили.\n\n{ex.Message}", "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
-    }
 
-    private void CreateProfile_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = new CreateProfileWindow { Owner = this };
-        if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.ProfileName)) return;
+        Host.Content = next;
 
-        if (_profiles.Any(profile => string.Equals(profile.Name, dialog.ProfileName.Trim(), StringComparison.OrdinalIgnoreCase)))
+        if (!Motion.Enabled)
         {
-            MessageBox.Show("Профиль с таким названием уже существует.", "FlowDroid",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            Host.BeginAnimation(OpacityProperty, null);
+            Host.Opacity = 1;
             return;
         }
 
-        _profiles.Add(new EmulatorProfile { Name = dialog.ProfileName.Trim(), AndroidVersion = dialog.AndroidVersion });
-        SaveProfiles();
-        UpdateProfileCount();
+        Host.BeginAnimation(OpacityProperty,
+            new DoubleAnimation(0, 1, Motion.Standard) { EasingFunction = Motion.EaseOut });
+        HostShift.BeginAnimation(System.Windows.Media.TranslateTransform.YProperty,
+            new DoubleAnimation(14, 0, Motion.Standard) { EasingFunction = Motion.Decelerate });
     }
 
-    private void DeleteProfile_Click(object sender, RoutedEventArgs e)
+    private UserControl GetView(string key)
     {
-        if (sender is not FrameworkElement { Tag: EmulatorProfile profile }) return;
-        if (MessageBox.Show(
-                $"Удалить профиль «{profile.Name}» вместе со всеми импортированными APK-файлами?",
-                "Удаление профиля", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
-            return;
+        if (_views.TryGetValue(key, out var existing)) return existing;
 
-        try
+        UserControl view = key switch
         {
-            _profileStore.DeleteProfileData(profile.Id);
-            _profiles.Remove(profile);
-            SaveProfiles();
-            UpdateProfileCount();
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show($"Не удалось полностью удалить данные профиля.\n{ex.Message}",
-                "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+            "home" => new HomeView(),
+            "profiles" => new ProfilesView(),
+            "apps" => Placeholder("Приложения",
+                "Каталог импортированных APK и установка в профиль.",
+                "Каталог приложений появится на следующем этапе."),
+            "files" => Placeholder("Файлы",
+                "Управление файлами профилей и занятым местом.",
+                "Файловый раздел появится на следующем этапе."),
+            "settings" => Placeholder("Настройки",
+                "Тема, акцент, анимации и параметры Android.",
+                "Настройки и темы появятся на этапах 3–4."),
+            _ => Placeholder("О программе", "FlowDroid — Android-эмулятор для Windows.",
+                "Сведения о версиях компонентов будут добавлены позже.")
+        };
+
+        view.DataContext = DataContext;
+        _views[key] = view;
+        return view;
     }
 
-    private void SaveProfiles()
-    {
-        try { _profileStore.Save(_profiles); }
-        catch (Exception ex) { MessageBox.Show($"Не удалось сохранить профили.\n\n{ex.Message}", "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Error); }
-    }
-
-    private void OpenProfile_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is not FrameworkElement { Tag: EmulatorProfile profile }) return;
-        var dialog = new ProfileWindow(profile) { Owner = this };
-        dialog.ShowDialog();
-        SaveProfiles();
-        ProfilesList.Items.Refresh();
-    }
-
-    private void UpdateProfileCount()
-    {
-        var count = _profiles.Count;
-        ProfileCountText.Text = count switch { 1 => "1 профиль", >= 2 and <= 4 => $"{count} профиля", _ => $"{count} профилей" };
-        EmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
-    }
+    private static SectionPlaceholderView Placeholder(string heading, string description, string note) =>
+        new() { Heading = heading, Description = description, Note = note };
 }
