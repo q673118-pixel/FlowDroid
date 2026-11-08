@@ -7,6 +7,7 @@ namespace FlowDroid.Services;
 public static class LocalizationService
 {
     private static readonly Dictionary<string, string> English = new(StringComparer.Ordinal)
+    {
         ["Главная"] = "Home", ["Профили"] = "Profiles",
         ["Приложения"] = "Applications", ["Файлы"] = "Files",
         ["Настройки"] = "Settings", ["О программе"] = "About",
