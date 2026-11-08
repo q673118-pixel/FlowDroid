@@ -9,6 +9,7 @@ public partial class AppearanceSettingsWindow : Window
     public AppearanceSettingsWindow()
     {
         InitializeComponent();
+        Loaded += (_, _) => MotionService.Show(SettingsRoot, 190, 8);
         SelectByTag(ThemeModeBox, ThemeService.Current.ThemeMode);
         SelectByTag(AccentBox, ThemeService.Current.Accent);
         AnimationsCheckBox.IsChecked = ThemeService.Current.AnimationsEnabled;
