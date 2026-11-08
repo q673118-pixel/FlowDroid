@@ -16,6 +16,7 @@ public sealed class AndroidSdkService
     public string? EmulatorPath { get; }
     public string? AaptPath { get; }
     public string? ScrcpyPath { get; }
+    private bool? _supportsScrcpyVirtualDisplay;
 
     public bool IsAvailable => AdbPath is not null && EmulatorPath is not null;
 
@@ -334,11 +335,15 @@ public sealed class AndroidSdkService
     {
         if (ScrcpyPath is null) return false;
 
-        var help = await RunAsync(ScrcpyPath, new[] { "--help" }, TimeSpan.FromSeconds(15), cancellationToken);
-        var helpText = help.StandardOutput + help.StandardError;
-        if (!helpText.Contains("--new-display", StringComparison.Ordinal) ||
-            !helpText.Contains("--start-app", StringComparison.Ordinal))
-            return false;
+        if (_supportsScrcpyVirtualDisplay is null)
+        {
+            var help = await RunAsync(ScrcpyPath, new[] { "--help" }, TimeSpan.FromSeconds(15), cancellationToken);
+            var helpText = help.StandardOutput + help.StandardError;
+            _supportsScrcpyVirtualDisplay =
+                helpText.Contains("--new-display", StringComparison.Ordinal) &&
+                helpText.Contains("--start-app", StringComparison.Ordinal);
+        }
+        if (!_supportsScrcpyVirtualDisplay.Value) return false;
 
         var match = Regex.Match(resolution, @"(\d+)\s*[×x]\s*(\d+)");
         var width = match.Success && int.TryParse(match.Groups[1].Value, out var parsedWidth) ? parsedWidth : 1280;
