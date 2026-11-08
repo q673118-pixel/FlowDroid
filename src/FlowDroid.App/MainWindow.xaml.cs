@@ -11,6 +11,7 @@ public partial class MainWindow : Window
 {
     private readonly ObservableCollection<EmulatorProfile> _profiles = new();
     private readonly ProfileStore _profileStore = new();
+    private readonly AppSettingsStore _settingsStore = new();
     private ICollectionView? _profilesView;
     private bool _sortDescending;
 
@@ -53,6 +54,27 @@ public partial class MainWindow : Window
             MotionService.Show(element, 190, 7);
     }
 
+    private void Profiles_Click(object sender, RoutedEventArgs e)
+    {
+        ProfileSearchBox.Clear();
+        ProfileSearchBox.Focus();
+    }
+
+    private void Apps_Click(object sender, RoutedEventArgs e) =>
+        new AppsWindow { Owner = this }.ShowDialog();
+
+    private void Files_Click(object sender, RoutedEventArgs e) =>
+        new FilesWindow { Owner = this }.ShowDialog();
+
+    private void Settings_Click(object sender, RoutedEventArgs e) =>
+        new SettingsWindow { Owner = this }.ShowDialog();
+
+    private void About_Click(object sender, RoutedEventArgs e)
+    {
+        MessageBox.Show("FlowDroid — Android-эмулятор для Windows.\n\nУправление профилями, библиотека APK и Android Runtime.\nВерсия 0.4.0",
+            "О программе FlowDroid", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
     private void MainWindow_StateChanged(object? sender, EventArgs e) =>
         UpdateMaximizeButton();
 
@@ -93,10 +115,14 @@ public partial class MainWindow : Window
             return;
         }
 
+        var defaults = _settingsStore.Load();
         _profiles.Add(new EmulatorProfile
         {
             Name = dialog.ProfileName.Trim(),
-            AndroidVersion = dialog.AndroidVersion
+            AndroidVersion = dialog.AndroidVersion,
+            RamGb = defaults.DefaultRamGb,
+            CpuCores = defaults.DefaultCpuCores,
+            TargetFps = defaults.DefaultFps
         });
         SaveProfiles();
         UpdateProfileCount();
@@ -107,7 +133,8 @@ public partial class MainWindow : Window
         if (sender is not FrameworkElement { Tag: EmulatorProfile profile })
             return;
 
-        if (MessageBox.Show(
+        if (_settingsStore.Load().ConfirmBeforeDelete &&
+            MessageBox.Show(
                 $"Удалить профиль «{profile.Name}» вместе со всеми импортированными APK-файлами?",
                 "Удаление профиля", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
             return;
