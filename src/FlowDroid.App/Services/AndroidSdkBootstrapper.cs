@@ -41,7 +41,7 @@ public sealed class AndroidSdkBootstrapper
             "build-tools;36.0.0",
             "platforms;android-36",
             "system-images;android-36;google_apis;x86_64"
-        }, java, TimeSpan.FromMinutes(45), cancellationToken);
+        }, java, progress, TimeSpan.FromMinutes(120), cancellationToken);
 
         try
         {
@@ -248,7 +248,7 @@ public sealed class AndroidSdkBootstrapper
 
     private static async Task RunBatchAsync(
         string batchFile, IEnumerable<string> arguments, string javaHome,
-        TimeSpan timeout, CancellationToken token)
+        IProgress<string>? progress, TimeSpan timeout, CancellationToken token)
     {
         var start = CreateBatchStartInfo(batchFile, arguments, javaHome);
         start.RedirectStandardInput = true;
@@ -258,8 +258,8 @@ public sealed class AndroidSdkBootstrapper
 
         using var process = new Process { StartInfo = start };
         var output = new StringBuilder();
-        process.OutputDataReceived += (_, e) => { if (e.Data is not null) output.AppendLine(e.Data); };
-        process.ErrorDataReceived += (_, e) => { if (e.Data is not null) output.AppendLine(e.Data); };
+        process.OutputDataReceived += (_, e) => { if (e.Data is not null) { output.AppendLine(e.Data); progress?.Report(e.Data); } };
+        process.ErrorDataReceived += (_, e) => { if (e.Data is not null) { output.AppendLine(e.Data); progress?.Report(e.Data); } };
         if (!process.Start()) throw new InvalidOperationException("Не удалось запустить Android SDK Manager.");
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
