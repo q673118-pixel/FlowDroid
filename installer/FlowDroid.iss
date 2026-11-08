@@ -12,8 +12,8 @@ DefaultDirName={localappdata}\Programs\FlowDroid
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\artifacts\installer
 OutputBaseFilename=FlowDroid-Setup-{#AppVersion}
 SetupLogging=yes
@@ -25,6 +25,7 @@ CloseApplications=yes
 RestartApplications=no
 
 [Languages]
+Name: "russian"; MessagesFile: "compiler:Languages\\Russian.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
