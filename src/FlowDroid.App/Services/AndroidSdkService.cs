@@ -102,7 +102,10 @@ public sealed class AndroidSdkService
             {
                 var name = await RunAsync(AdbPath!, new[] { "-s", parts[0], "emu", "avd", "name" },
                     TimeSpan.FromSeconds(5), cancellationToken);
-                if (string.Equals(name.StandardOutput.Trim(), avdName, StringComparison.OrdinalIgnoreCase))
+                var runningAvdName = name.StandardOutput
+                    .Split(new[] { '\\r', '\\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .LastOrDefault();
+                if (string.Equals(runningAvdName, avdName, StringComparison.OrdinalIgnoreCase))
                 {
                     await WaitForBootAsync(parts[0], TimeSpan.FromMinutes(5), cancellationToken);
                     return parts[0];
@@ -370,9 +373,10 @@ public sealed class AndroidSdkService
         {
             await process.WaitForExitAsync(timeoutCts.Token);
         }
-        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException)
         {
             try { process.Kill(entireProcessTree: true); } catch { }
+            if (cancellationToken.IsCancellationRequested) throw;
             throw new TimeoutException($"{Path.GetFileName(executable)} не ответил за отведённое время.");
         }
 
