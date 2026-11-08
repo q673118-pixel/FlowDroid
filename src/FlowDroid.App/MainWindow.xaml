@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:models="clr-namespace:FlowDroid.Models"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
-        Title="FlowDroid" Height="780" Width="1220" MinHeight="650" MinWidth="980"
+        Title="FlowDroid" Height="800" Width="1280" MinHeight="680" MinWidth="1020"
         WindowStartupLocation="CenterScreen" WindowStyle="None" ResizeMode="CanResize" StateChanged="MainWindow_StateChanged"
         Background="{StaticResource WindowBrush}">
     <shell:WindowChrome.WindowChrome>
@@ -11,7 +11,7 @@
                             GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
     </shell:WindowChrome.WindowChrome>
 
-    <Border Background="{StaticResource WindowBrush}" BorderBrush="#302A38" BorderThickness="1">
+    <Border Background="{StaticResource WindowBrush}" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" CornerRadius="18" ClipToBounds="True">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="42"/>
@@ -50,7 +50,7 @@
 
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="224"/>
+                    <ColumnDefinition Width="238"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
@@ -69,7 +69,7 @@
                         <StackPanel DockPanel.Dock="Bottom">
                             <Button Style="{StaticResource NavButton}" Content="  Настройки" IsEnabled="False"
                                     ToolTip="Глобальные настройки будут добавлены отдельным этапом."/>
-                            <TextBlock Text="Версия 0.1.1" FontSize="10" Foreground="{StaticResource MutedTextBrush}"
+                            <TextBlock Text="Версия 0.2.0" FontSize="10" Foreground="{StaticResource MutedTextBrush}"
                                        Margin="12,14,0,4"/>
                         </StackPanel>
                     </DockPanel>
@@ -106,8 +106,8 @@
                                 </ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type models:EmulatorProfile}">
-                                        <Border Width="286" Background="{StaticResource SurfaceBrush}"
-                                                CornerRadius="20" Padding="19" Margin="0,0,16,16">
+                                        <Border Width="300" Background="{StaticResource SurfaceBrush}"
+                                                CornerRadius="22" Padding="21" Margin="0,0,18,18" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1">
                                             <StackPanel>
                                                 <Border Width="44" Height="44" CornerRadius="14"
                                                         Background="{StaticResource SurfaceVariantBrush}"
@@ -150,9 +150,9 @@
                                 <TextBlock Text="▣" FontSize="30" Foreground="{StaticResource AccentHoverBrush}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-                            <TextBlock Text="Пока нет профилей" FontSize="21" FontWeight="SemiBold"
+                            <TextBlock Text="Пока нет профилей" FontSize="22" FontWeight="SemiBold"
                                        HorizontalAlignment="Center"/>
-                            <TextBlock Text="Создай профиль, чтобы добавить свои APK." FontSize="13"
+                            <TextBlock Text="Создай отдельную Android-среду и добавь свои APK." FontSize="13"
                                        Foreground="{StaticResource MutedTextBrush}" Margin="0,8,0,18"
                                        HorizontalAlignment="Center"/>
                             <Button Style="{StaticResource PrimaryButton}" Content="Создать профиль"
