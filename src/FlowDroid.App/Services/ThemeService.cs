@@ -43,6 +43,15 @@ public static class ThemeService
         Save();
     }
 
+    public static void UpdatePreferences(string language, string fontFamily, double motionSpeed)
+    {
+        _settings.Language = language == "English" ? "English" : "Русский";
+        _settings.FontFamily = string.IsNullOrWhiteSpace(fontFamily) ? "Segoe UI Variable" : fontFamily;
+        _settings.MotionSpeed = Math.Clamp(motionSpeed, 0.65, 1.5);
+        Apply();
+        Save();
+    }
+
     public static void Apply()
     {
         if (Application.Current is null) return;
@@ -55,6 +64,7 @@ public static class ThemeService
         };
 
         var palette = GetAccent(_settings.Accent);
+        resources["AppFontFamily"] = new FontFamily(_settings.FontFamily);
         resources["MotionFast"] = new Duration(_settings.AnimationsEnabled ? TimeSpan.FromMilliseconds(120) : TimeSpan.Zero);
         resources["MotionStandard"] = new Duration(_settings.AnimationsEnabled ? TimeSpan.FromMilliseconds(140) : TimeSpan.Zero);
         resources["MotionEmphasis"] = new Duration(_settings.AnimationsEnabled ? TimeSpan.FromMilliseconds(160) : TimeSpan.Zero);
@@ -135,4 +145,7 @@ public sealed class AppearanceSettings
     public string ThemeMode { get; set; } = "Dark";
     public string Accent { get; set; } = "Purple";
     public bool AnimationsEnabled { get; set; } = true;
+    public string Language { get; set; } = "Русский";
+    public string FontFamily { get; set; } = "Segoe UI Variable";
+    public double MotionSpeed { get; set; } = 1.0;
 }
