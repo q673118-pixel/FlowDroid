@@ -40,6 +40,8 @@ public sealed class AndroidSdkBootstrapper
             "system-images;android-36;google_apis;x86_64"
         }, acceptLicenses: true, java, TimeSpan.FromMinutes(45), cancellationToken);
 
+        await EnsureScrcpyAsync(progress, cancellationToken);
+
         var avdManager = Path.Combine(_root, "cmdline-tools", "latest", "bin", "avdmanager.bat");
         var safeId = new string(profileId.Where(char.IsLetterOrDigit).Take(8).ToArray());
         if (string.IsNullOrWhiteSpace(safeId)) safeId = Guid.NewGuid().ToString("N")[..8];
@@ -56,6 +58,50 @@ public sealed class AndroidSdkBootstrapper
         Environment.SetEnvironmentVariable("ANDROID_SDK_ROOT", _root, EnvironmentVariableTarget.Process);
         progress?.Report("Android Runtime установлен. Профиль готов к запуску.");
         return avdName;
+    }
+
+
+    private static async Task EnsureScrcpyAsync(IProgress<string>? progress, CancellationToken token)
+    {
+        var target = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "FlowDroid", "Tools", "scrcpy");
+        if (File.Exists(Path.Combine(target, "scrcpy.exe"))) return;
+
+        progress?.Report("Загрузка scrcpy для отдельных окон Android-приложений…");
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("FlowDroid-Setup/0.3");
+        using var response = await client.GetAsync(
+            "https://api.github.com/repos/Genymobile/scrcpy/releases/latest", token);
+        response.EnsureSuccessStatusCode();
+        using var document = System.Text.Json.JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(token));
+        var asset = document.RootElement.GetProperty("assets").EnumerateArray()
+            .FirstOrDefault(item =>
+                item.GetProperty("name").GetString() is string name &&
+                name.Contains("win64", StringComparison.OrdinalIgnoreCase) &&
+                name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
+        if (asset.ValueKind == System.Text.Json.JsonValueKind.Undefined)
+            throw new InvalidOperationException("Не найден официальный архив scrcpy для Windows x64.");
+
+        var url = asset.GetProperty("browser_download_url").GetString()
+            ?? throw new InvalidOperationException("У релиза scrcpy отсутствует ссылка на архив.");
+        var archive = Path.Combine(Path.GetTempPath(), "flowdroid-scrcpy-win64.zip");
+        await DownloadAsync(url, archive, progress, token);
+        var extract = Path.Combine(Path.GetTempPath(), "flowdroid-scrcpy");
+        if (Directory.Exists(extract)) Directory.Delete(extract, true);
+        ZipFile.ExtractToDirectory(archive, extract, overwriteFiles: true);
+        File.Delete(archive);
+
+        var executable = Directory.EnumerateFiles(extract, "scrcpy.exe", SearchOption.AllDirectories)
+            .FirstOrDefault();
+        if (executable is null)
+            throw new InvalidOperationException("В архиве scrcpy не найден scrcpy.exe.");
+        var sourceDirectory = Path.GetDirectoryName(executable)!;
+        if (Directory.Exists(target)) Directory.Delete(target, true);
+        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+        Directory.Move(sourceDirectory, target);
+        Directory.Delete(extract, true);
     }
 
     private async Task<string> EnsureJavaAsync(IProgress<string>? progress, CancellationToken token)
