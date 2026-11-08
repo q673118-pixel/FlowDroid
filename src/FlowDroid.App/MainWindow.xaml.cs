@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Data;
 using System.Windows;
 using FlowDroid.Models;
 using FlowDroid.Services;
@@ -9,12 +11,16 @@ public partial class MainWindow : Window
 {
     private readonly ObservableCollection<EmulatorProfile> _profiles = new();
     private readonly ProfileStore _profileStore = new();
+    private ICollectionView? _profilesView;
+    private bool _sortDescending;
 
     public MainWindow()
     {
         InitializeComponent();
         WindowAppearance.Apply(this);
-        ProfilesList.ItemsSource = _profiles;
+        _profilesView = CollectionViewSource.GetDefaultView(_profiles);
+        _profilesView.Filter = FilterProfile;
+        ProfilesList.ItemsSource = _profilesView;
         LoadProfiles();
         UpdateProfileCount();
     }
@@ -118,10 +124,52 @@ public partial class MainWindow : Window
         ProfilesList.Items.Refresh();
     }
 
+    private bool FilterProfile(object item)
+    {
+        if (item is not EmulatorProfile profile) return false;
+        var query = ProfileSearchBox?.Text?.Trim();
+        return string.IsNullOrEmpty(query)
+            || profile.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
+            || profile.AndroidVersion.Contains(query, StringComparison.CurrentCultureIgnoreCase);
+    }
+
+    private void ProfileSearchBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+    {
+        _profilesView?.Refresh();
+        UpdateProfileCount();
+    }
+
+    private void SortProfiles_Click(object sender, RoutedEventArgs e)
+    {
+        _sortDescending = !_sortDescending;
+        if (_profilesView is null) return;
+        using (_profilesView.DeferRefresh())
+        {
+            _profilesView.SortDescriptions.Clear();
+            _profilesView.SortDescriptions.Add(new SortDescription(
+                nameof(EmulatorProfile.Name),
+                _sortDescending ? ListSortDirection.Descending : ListSortDirection.Ascending));
+        }
+    }
+
     private void UpdateProfileCount()
     {
-        var count = _profiles.Count;
-        ProfileCountText.Text = count switch { 1 => "1 профиль", >= 2 and <= 4 => $"{count} профиля", _ => $"{count} профилей" };
-        EmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        var total = _profiles.Count;
+        var visible = _profilesView?.Cast<object>().Count() ?? total;
+        ProfileCountText.Text = total switch
+        {
+            1 => "1 профиль",
+            >= 2 and <= 4 => $"{total} профиля",
+            _ => $"{total} профилей"
+        };
+
+        var hasQuery = !string.IsNullOrWhiteSpace(ProfileSearchBox?.Text);
+        var isEmpty = total == 0 && !hasQuery;
+        var noResults = total > 0 && visible == 0 && hasQuery;
+
+        ProfilesList.Visibility = visible > 0 ? Visibility.Visible : Visibility.Collapsed;
+        CreateProfileTile.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+        EmptyState.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
+        NoSearchResults.Visibility = noResults ? Visibility.Visible : Visibility.Collapsed;
     }
 }
