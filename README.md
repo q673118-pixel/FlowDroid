@@ -2,9 +2,12 @@
 
 FlowDroid is a Windows desktop app for creating Android profiles and launching imported APKs in separate Windows windows.
 
-## Version 0.4.0
+## Version 0.4.0 — interface refresh in progress
 
 ### Implemented
+- Main window redesigned around the supplied FlowDroid reference: purple Android identity, fixed navigation rail, large hero heading, profile search, profile cards and dedicated empty state.
+- Profile search and alphabetical sorting in the main view.
+- Updated purple design tokens and lightweight hover motion for primary, secondary and navigation controls.
 - Dark Material-inspired interface aligned with MathFlow: solid near-black surfaces, restrained purple accent, rounded cards and controls.
 - Custom title bars, native Windows 11 rounded corners and rounded window regions on Windows 10.
 - Custom dark ComboBox dropdowns, text fields, buttons, lists and popup surfaces (no white system dropdowns).
@@ -65,3 +68,6 @@ Requirements: Windows 10/11 and .NET 8 SDK. The GitHub Actions workflow creates:
 ## Repository
 
 https://github.com/q673118-pixel/FlowDroid
+
+### Current verification status
+The interface changes are committed to `main`. A successful Windows Release build has not yet been confirmed for these latest commits; do not treat the visual refresh as build-verified until the Windows Actions job completes.
