@@ -102,19 +102,19 @@ public static class ThemeService
 
     private static void SetColor(ResourceDictionary resources, string key, string hex)
     {
-        resources[key] = (Color)ColorConverter.ConvertFromString(hex);
+        resources[key] = ParseColor(hex);
     }
 
     private static void SetBrush(ResourceDictionary resources, string key, string hex)
     {
-        var color = (Color)ColorConverter.ConvertFromString(hex);
+        var color = ParseColor(hex);
         if (resources[key] is SolidColorBrush brush && !brush.IsFrozen)
             brush.Color = color;
         else
             resources[key] = new SolidColorBrush(color);
     }
 
-    private static AccentPalette GetAccent(string name) => name switch
+    private static Color ParseColor(string hex) => (Color)new ColorConverter().ConvertFromString(hex)!;\n\n    private static AccentPalette GetAccent(string name) => name switch
     {
         "Ocean" => new("#3188D8", "#4A9BE8", "#2165A8"),
         "Emerald" => new("#239B70", "#35B486", "#177653"),
