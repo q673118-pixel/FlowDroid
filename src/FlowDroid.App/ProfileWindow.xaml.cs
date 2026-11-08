@@ -16,6 +16,7 @@ public partial class ProfileWindow : Window
     private AndroidSdkService _android = new();
     private readonly AndroidSdkBootstrapper _bootstrapper = new();
     private bool _loadingAvds;
+    private string? _activeSerial;
     private readonly ObservableCollection<ApkEntry> _apks;
 
     public ProfileWindow(EmulatorProfile profile)
@@ -161,7 +162,7 @@ public partial class ProfileWindow : Window
         {
             _profile.AndroidVirtualDevice = avd;
             _store.Update(_profile);
-            await _android.StartAvdAsync(avd, _profile.RamGb, _profile.CpuCores, _profile.Resolution, _profile.Dpi, _profile.GraphicsRenderer, _profile.Orientation);
+            _activeSerial = await _android.StartAvdAsync(avd, _profile.RamGb, _profile.CpuCores, _profile.Resolution, _profile.Dpi, _profile.GraphicsRenderer, _profile.Orientation);
             RuntimeStatusText.Text = $"Android готов: {avd}. Применены параметры профиля. Теперь выбери APK и нажми «Установить и запустить».";
         }
         catch (Exception ex)
@@ -187,7 +188,7 @@ public partial class ProfileWindow : Window
         try
         {
             var openedInSeparateWindow = await _android.InstallAndLaunchAsync(
-                selected.StoredPath, _profile.Resolution, _profile.Dpi, _profile.TargetFps, _profile.Orientation);
+                selected.StoredPath, _activeSerial, _profile.Resolution, _profile.Dpi, _profile.TargetFps, _profile.Orientation);
             RuntimeStatusText.Text = openedInSeparateWindow
                 ? selected.FileName + " открыт в отдельном окне FlowDroid."
                 : selected.FileName + " запущен в окне Android Emulator. Для отдельного окна установи scrcpy.";
