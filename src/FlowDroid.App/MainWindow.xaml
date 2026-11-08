@@ -44,13 +44,13 @@
                         <Button Style="{StaticResource NavButton}" Margin="0,8,0,0" Click="Profiles_Click">
                             <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8EA;" FontFamily="Segoe MDL2 Assets" FontSize="23" Width="42"/><TextBlock Text="Профили" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
                         </Button>
-                        <Button Style="{StaticResource NavButton}" IsEnabled="False" Margin="0,8,0,0" ToolTip="Раздел будет добавлен следующим этапом">
+                        <Button Style="{StaticResource NavButton}" Click="Apps_Click" Margin="0,8,0,0">
                             <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE71D;" FontFamily="Segoe MDL2 Assets" FontSize="23" Width="42"/><TextBlock Text="Приложения" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
                         </Button>
-                        <Button Style="{StaticResource NavButton}" IsEnabled="False" Margin="0,8,0,0" ToolTip="Раздел будет добавлен следующим этапом">
+                        <Button Style="{StaticResource NavButton}" Click="Files_Click" Margin="0,8,0,0">
                             <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8B7;" FontFamily="Segoe MDL2 Assets" FontSize="23" Width="42"/><TextBlock Text="Файлы" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
                         </Button>
-                        <Button Style="{StaticResource NavButton}" IsEnabled="False" Margin="0,8,0,0" ToolTip="Раздел будет добавлен следующим этапом">
+                        <Button Style="{StaticResource NavButton}" Click="Settings_Click" Margin="0,8,0,0">
                             <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="23" Width="42"/><TextBlock Text="Настройки" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
                         </Button>
                     </StackPanel>
