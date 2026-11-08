@@ -1,7 +1,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Windows.Data;
 using System.Windows;
+using System.Windows.Data;
 using FlowDroid.Models;
 using FlowDroid.Services;
 
@@ -18,17 +18,18 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         WindowAppearance.Apply(this);
+
         _profilesView = CollectionViewSource.GetDefaultView(_profiles);
         _profilesView.Filter = FilterProfile;
         ProfilesList.ItemsSource = _profilesView;
+
+        Loaded += (_, _) => MotionService.Show(MainContentRoot, 240, 10);
         LoadProfiles();
         UpdateProfileCount();
     }
 
-    private void MinimizeWindow_Click(object sender, RoutedEventArgs e)
-    {
+    private void MinimizeWindow_Click(object sender, RoutedEventArgs e) =>
         WindowState = WindowState.Minimized;
-    }
 
     private void MaximizeWindow_Click(object sender, RoutedEventArgs e)
     {
@@ -38,20 +39,27 @@ public partial class MainWindow : Window
         UpdateMaximizeButton();
     }
 
-    private void CloseWindow_Click(object sender, RoutedEventArgs e)
+    private void CloseWindow_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void AppearanceSettings_Click(object sender, RoutedEventArgs e)
     {
-        Close();
+        var dialog = new AppearanceSettingsWindow { Owner = this };
+        dialog.ShowDialog();
     }
 
-    private void MainWindow_StateChanged(object? sender, EventArgs e)
+    private void ProfileCard_Loaded(object sender, RoutedEventArgs e)
     {
-        UpdateMaximizeButton();
+        if (sender is UIElement element)
+            MotionService.Show(element, 190, 7);
     }
+
+    private void MainWindow_StateChanged(object? sender, EventArgs e) =>
+        UpdateMaximizeButton();
 
     private void UpdateMaximizeButton()
     {
         if (MaximizeButton is not null)
-            MaximizeButton.Content = WindowState == WindowState.Maximized ? "\uE923" : "\uE922";
+            MaximizeButton.Content = WindowState == WindowState.Maximized ? "\\uE923" : "\\uE922";
     }
 
     private void LoadProfiles()
@@ -66,30 +74,39 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Не удалось загрузить профили.\n\n{ex.Message}", "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Warning);
+            MessageBox.Show($"Не удалось загрузить профили.\\n\\n{ex.Message}", "FlowDroid",
+                MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
     private void CreateProfile_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new CreateProfileWindow { Owner = this };
-        if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.ProfileName)) return;
+        if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.ProfileName))
+            return;
 
-        if (_profiles.Any(profile => string.Equals(profile.Name, dialog.ProfileName.Trim(), StringComparison.OrdinalIgnoreCase)))
+        if (_profiles.Any(profile => string.Equals(profile.Name, dialog.ProfileName.Trim(),
+                StringComparison.OrdinalIgnoreCase)))
         {
             MessageBox.Show("Профиль с таким названием уже существует.", "FlowDroid",
                 MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        _profiles.Add(new EmulatorProfile { Name = dialog.ProfileName.Trim(), AndroidVersion = dialog.AndroidVersion });
+        _profiles.Add(new EmulatorProfile
+        {
+            Name = dialog.ProfileName.Trim(),
+            AndroidVersion = dialog.AndroidVersion
+        });
         SaveProfiles();
         UpdateProfileCount();
     }
 
     private void DeleteProfile_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement { Tag: EmulatorProfile profile }) return;
+        if (sender is not FrameworkElement { Tag: EmulatorProfile profile })
+            return;
+
         if (MessageBox.Show(
                 $"Удалить профиль «{profile.Name}» вместе со всеми импортированными APK-файлами?",
                 "Удаление профиля", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
@@ -104,20 +121,29 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"Не удалось полностью удалить данные профиля.\n{ex.Message}",
+            MessageBox.Show($"Не удалось полностью удалить данные профиля.\\n{ex.Message}",
                 "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }
 
     private void SaveProfiles()
     {
-        try { _profileStore.Save(_profiles); }
-        catch (Exception ex) { MessageBox.Show($"Не удалось сохранить профили.\n\n{ex.Message}", "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Error); }
+        try
+        {
+            _profileStore.Save(_profiles);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Не удалось сохранить профили.\\n\\n{ex.Message}", "FlowDroid",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void OpenProfile_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement { Tag: EmulatorProfile profile }) return;
+        if (sender is not FrameworkElement { Tag: EmulatorProfile profile })
+            return;
+
         var dialog = new ProfileWindow(profile) { Owner = this };
         dialog.ShowDialog();
         SaveProfiles();
@@ -126,7 +152,9 @@ public partial class MainWindow : Window
 
     private bool FilterProfile(object item)
     {
-        if (item is not EmulatorProfile profile) return false;
+        if (item is not EmulatorProfile profile)
+            return false;
+
         var query = ProfileSearchBox?.Text?.Trim();
         return string.IsNullOrEmpty(query)
             || profile.Name.Contains(query, StringComparison.CurrentCultureIgnoreCase)
@@ -142,7 +170,9 @@ public partial class MainWindow : Window
     private void SortProfiles_Click(object sender, RoutedEventArgs e)
     {
         _sortDescending = !_sortDescending;
-        if (_profilesView is null) return;
+        if (_profilesView is null)
+            return;
+
         using (_profilesView.DeferRefresh())
         {
             _profilesView.SortDescriptions.Clear();
@@ -156,12 +186,7 @@ public partial class MainWindow : Window
     {
         var total = _profiles.Count;
         var visible = _profilesView?.Cast<object>().Count() ?? total;
-        ProfileCountText.Text = total switch
-        {
-            1 => "1 профиль",
-            >= 2 and <= 4 => $"{total} профиля",
-            _ => $"{total} профилей"
-        };
+        ProfileCountText.Text = total == 0 ? string.Empty : $"· {total}";
 
         var hasQuery = !string.IsNullOrWhiteSpace(ProfileSearchBox?.Text);
         var isEmpty = total == 0 && !hasQuery;
@@ -179,6 +204,5 @@ public partial class MainWindow : Window
             MotionService.Show(element, 180, 6);
         else if (!show && element.Visibility == Visibility.Visible)
             MotionService.Hide(element);
-    }
     }
 }
