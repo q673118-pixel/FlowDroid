@@ -17,9 +17,7 @@ public sealed class ProfileStore
 
     public IReadOnlyList<EmulatorProfile> Load()
     {
-        if (!File.Exists(FilePath))
-            return Array.Empty<EmulatorProfile>();
-
+        if (!File.Exists(FilePath)) return Array.Empty<EmulatorProfile>();
         return JsonSerializer.Deserialize<List<EmulatorProfile>>(File.ReadAllText(FilePath), JsonOptions)
                ?? new List<EmulatorProfile>();
     }
@@ -39,10 +37,8 @@ public sealed class ProfileStore
     {
         var profiles = Load().ToList();
         var index = profiles.FindIndex(x => x.Id == updated.Id);
-        if (index < 0)
-            profiles.Add(updated);
-        else
-            profiles[index] = updated;
+        if (index < 0) profiles.Add(updated);
+        else profiles[index] = updated;
         Save(profiles);
     }
 }
