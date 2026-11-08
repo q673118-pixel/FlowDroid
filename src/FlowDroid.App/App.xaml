@@ -3,16 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <Color x:Key="WindowColor">#100E13</Color>
-        <Color x:Key="SurfaceColor">#19161E</Color>
-        <Color x:Key="SurfaceVariantColor">#24202B</Color>
-        <Color x:Key="SurfaceElevatedColor">#2B2632</Color>
-        <Color x:Key="AccentColor">#8065B5</Color>
-        <Color x:Key="AccentHoverColor">#9279C8</Color>
-        <Color x:Key="AccentPressedColor">#6D559E</Color>
+        <Color x:Key="WindowColor">#0C0A10</Color>
+        <Color x:Key="SurfaceColor">#17131F</Color>
+        <Color x:Key="SurfaceVariantColor">#211A2D</Color>
+        <Color x:Key="SurfaceElevatedColor">#2B213B</Color>
+        <Color x:Key="AccentColor">#7540C8</Color>
+        <Color x:Key="AccentHoverColor">#8752D8</Color>
+        <Color x:Key="AccentPressedColor">#542A9B</Color>
         <Color x:Key="TextColor">#F3EFF8</Color>
         <Color x:Key="MutedTextColor">#A9A2B2</Color>
-        <Color x:Key="OutlineColor">#393341</Color>
+        <Color x:Key="OutlineColor">#30263D</Color>
         <SolidColorBrush x:Key="WindowBrush" Color="{StaticResource WindowColor}"/>
         <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}"/>
         <SolidColorBrush x:Key="SurfaceVariantBrush" Color="{StaticResource SurfaceVariantColor}"/>
@@ -23,6 +23,9 @@
         <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}"/>
         <SolidColorBrush x:Key="MutedTextBrush" Color="{StaticResource MutedTextColor}"/>
         <SolidColorBrush x:Key="OutlineBrush" Color="{StaticResource OutlineColor}"/>
+        <Duration x:Key="MotionFast">0:0:0.12</Duration>
+        <Duration x:Key="MotionStandard">0:0:0.20</Duration>
+        <Duration x:Key="MotionEmphasis">0:0:0.30</Duration>
 
         <Style TargetType="Window">
             <Setter Property="FontFamily" Value="Segoe UI Variable, Segoe UI"/>
@@ -46,12 +49,27 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="13" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" CornerRadius="16" Padding="{TemplateBinding Padding}" RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform><ScaleTransform x:Name="ButtonScale" ScaleX="1" ScaleY="1"/></Border.RenderTransform>
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource AccentHoverBrush}"/></Trigger>
-                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource AccentPressedBrush}"/></Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource AccentHoverBrush}"/>
+                                <Trigger.EnterActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleX" To="1.015" Duration="0:0:0.12"/>
+                                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleY" To="1.015" Duration="0:0:0.12"/>
+                                </Storyboard></BeginStoryboard></Trigger.EnterActions>
+                                <Trigger.ExitActions><BeginStoryboard><Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.14"/>
+                                    <DoubleAnimation Storyboard.TargetName="ButtonScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.14"/>
+                                </Storyboard></BeginStoryboard></Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource AccentPressedBrush}"/>
+                                <Setter TargetName="ButtonScale" Property="ScaleX" Value="0.985"/>
+                                <Setter TargetName="ButtonScale" Property="ScaleY" Value="0.985"/>
+                            </Trigger>
                             <Trigger Property="IsEnabled" Value="False"><Setter TargetName="ButtonBorder" Property="Opacity" Value="0.42"/></Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
