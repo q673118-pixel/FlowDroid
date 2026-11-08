@@ -33,6 +33,11 @@ public static class LocalizationService
         ["Движение интерфейса"] = "Interface motion", ["Использовать анимации"] = "Enable animations",
         ["Отключение убирает декоративные переходы и сокращает визуальные задержки."] = "Disabling this removes decorative transitions and reduces visual delays.",
         ["Применить"] = "Apply", ["Темы, цвета и анимации"] = "Themes, colors and animations",
+        ["Медленно"] = "Slow", ["Обычно"] = "Normal", ["Быстро"] = "Fast",
+        ["Язык интерфейса"] = "Interface language", ["Переключение языка приложения."] = "Change the application language.",
+        ["Шрифт приложения"] = "Application font", ["Выберите гарнитуру для всего интерфейса."] = "Choose a typeface for the entire interface.",
+        ["Предпросмотр шрифта"] = "Font preview", ["Скорость анимаций"] = "Animation speed",
+        ["Настройте темп переходов и появления элементов."] = "Adjust the pace of transitions and element entrances.",
         ["Имя профиля"] = "Profile name", ["Версия Android"] = "Android version",
         ["Настройки профиля"] = "Profile settings", ["Применить настройки"] = "Apply settings",
         ["Установить и запустить"] = "Install and launch", ["Импортировать APK"] = "Import APK",
@@ -78,9 +83,6 @@ public static class LocalizationService
                 break;
             case ContentControl content when content.Content is string value:
                 content.Content = Translate(value, language);
-                break;
-            case HeaderedContentControl headered when headered.Header is string header:
-                headered.Header = Translate(header, language);
                 break;
         }
 
