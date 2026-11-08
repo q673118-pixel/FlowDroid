@@ -191,6 +191,16 @@ public sealed class AndroidSdkService
         throw new TimeoutException("Android Emulator " + serial + " не завершил загрузку. Проверь виртуализацию и системный образ AVD.");
     }
 
+    public async Task StopAvdAsync(string serial, CancellationToken cancellationToken = default)
+    {
+        EnsureAdb();
+        if (string.IsNullOrWhiteSpace(serial))
+            throw new InvalidOperationException("Нет активного подключения к Android Emulator.");
+
+        await RunAsync(AdbPath!, new[] { "-s", serial, "emu", "kill" },
+            TimeSpan.FromSeconds(15), cancellationToken);
+    }
+
     public async Task<string> WaitForBootAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
     {
         EnsureAdb();
