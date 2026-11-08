@@ -38,9 +38,39 @@ public partial class MainWindow : Window
     {
         var dialog = new CreateProfileWindow { Owner = this };
         if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.ProfileName)) return;
+
+        if (_profiles.Any(profile => string.Equals(profile.Name, dialog.ProfileName.Trim(), StringComparison.OrdinalIgnoreCase)))
+        {
+            MessageBox.Show("Профиль с таким названием уже существует.", "FlowDroid",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
         _profiles.Add(new EmulatorProfile { Name = dialog.ProfileName.Trim(), AndroidVersion = dialog.AndroidVersion });
         SaveProfiles();
         UpdateProfileCount();
+    }
+
+    private void DeleteProfile_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: EmulatorProfile profile }) return;
+        if (MessageBox.Show(
+                $"Удалить профиль «{profile.Name}» вместе со всеми импортированными APK-файлами?",
+                "Удаление профиля", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            return;
+
+        try
+        {
+            _profileStore.DeleteProfileData(profile.Id);
+            _profiles.Remove(profile);
+            SaveProfiles();
+            UpdateProfileCount();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Не удалось полностью удалить данные профиля.\n{ex.Message}",
+                "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void SaveProfiles()
