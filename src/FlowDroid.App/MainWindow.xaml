@@ -75,7 +75,7 @@
                     </StackPanel>
                 </Grid>
 
-                <Grid Grid.Row="1" Margin="44,34,44,34">
+                <Grid x:Name="MainContentRoot" Grid.Row="1" Margin="44,34,44,34">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="150"/>
                         <RowDefinition Height="Auto"/>
@@ -106,7 +106,7 @@
                     <!-- Section header and search -->
                     <Grid Grid.Row="1" Margin="0,0,0,18">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="390"/><ColumnDefinition Width="76"/></Grid.ColumnDefinitions>
-                        <TextBlock x:Name="ProfileCountText" Text="Ваши профили" FontSize="30" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><TextBlock Text="Ваши профили" FontSize="30" FontWeight="SemiBold"/><TextBlock x:Name="ProfileCountText" FontSize="14" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" Margin="12,7,0,0"/></StackPanel>
                         <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" CornerRadius="24" Padding="18,0" Height="66">
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="30"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
@@ -128,7 +128,7 @@
                                 <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate DataType="{x:Type models:EmulatorProfile}">
-                                        <Border Width="350" MinHeight="280" Background="{StaticResource SurfaceBrush}"
+                                        <Border Width="350" MinHeight="280" Background="{StaticResource SurfaceBrush}" Loaded="ProfileCard_Loaded"
                                                 CornerRadius="30" Padding="28" Margin="0,0,20,20"
                                                 BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1">
                                             <Border.RenderTransform><ScaleTransform ScaleX="1" ScaleY="1"/></Border.RenderTransform>
