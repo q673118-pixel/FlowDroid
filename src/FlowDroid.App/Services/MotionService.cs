@@ -22,11 +22,11 @@ public static class MotionService
         element.RenderTransform = transform;
         element.Opacity = 0;
 
-        var opacity = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(durationMs))
+        var opacity = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(durationMs * ThemeService.Current.MotionSpeed))
         {
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
-        var slide = new DoubleAnimation(fromY, 0, TimeSpan.FromMilliseconds(durationMs))
+        var slide = new DoubleAnimation(fromY, 0, TimeSpan.FromMilliseconds(durationMs * ThemeService.Current.MotionSpeed))
         {
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
@@ -44,7 +44,7 @@ public static class MotionService
             return;
         }
 
-        var animation = new DoubleAnimation(element.Opacity, 0, TimeSpan.FromMilliseconds(durationMs))
+        var animation = new DoubleAnimation(element.Opacity, 0, TimeSpan.FromMilliseconds(durationMs * ThemeService.Current.MotionSpeed))
         {
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
         };
@@ -60,7 +60,7 @@ public static class MotionService
     public static void Pulse(UIElement? element)
     {
         if (element is null || !ThemeService.Current.AnimationsEnabled) return;
-        var animation = new DoubleAnimation(0.985, 1, TimeSpan.FromMilliseconds(180))
+        var animation = new DoubleAnimation(0.985, 1, TimeSpan.FromMilliseconds(180 * ThemeService.Current.MotionSpeed))
         {
             EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.12 }
         };
