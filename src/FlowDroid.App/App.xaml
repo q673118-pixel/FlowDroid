@@ -134,7 +134,7 @@
             <Setter Property="Template">
                 <Setter.Value><ControlTemplate TargetType="TextBox">
                     <Border x:Name="TextBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11">
-                        <ScrollViewer x:Name="PART_ContentHost" Margin="0"/>
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="TextBorder" Property="BorderBrush" Value="{StaticResource AccentHoverBrush}"/></Trigger>
@@ -164,6 +164,7 @@
                                         BorderThickness="1" CornerRadius="11" Padding="12,0">
                                     <Grid>
                                         <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Left"
+                                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                                           Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"
                                                           ContentTemplate="{Binding SelectionBoxItemTemplate, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
                                         <Path Data="M 0 0 L 4 4 L 8 0" Stroke="{StaticResource MutedTextBrush}" StrokeThickness="1.6"
