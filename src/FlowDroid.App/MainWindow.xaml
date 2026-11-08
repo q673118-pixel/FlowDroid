@@ -67,8 +67,9 @@
             <!-- Main content -->
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions><RowDefinition Height="42"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                <Grid Grid.Row="0" Background="#100D14">
+                <Grid Grid.Row="0" Background="{StaticResource WindowBrush}">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Style="{StaticResource WindowControlButton}" Content="&#xE790;" shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="AppearanceSettings_Click" ToolTip="Внешний вид"/>
                         <Button Style="{StaticResource WindowControlButton}" Content="&#xE921;" shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="MinimizeWindow_Click" ToolTip="Свернуть"/>
                         <Button x:Name="MaximizeButton" Style="{StaticResource WindowControlButton}" Content="&#xE922;" shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="MaximizeWindow_Click" ToolTip="Развернуть"/>
                         <Button Style="{StaticResource CloseWindowButton}" Content="&#xE8BB;" shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="CloseWindow_Click" ToolTip="Закрыть"/>
