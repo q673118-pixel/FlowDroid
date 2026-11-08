@@ -42,7 +42,7 @@ public partial class ProfileWindow : Window
     private void UpdateMaximizeButton()
     {
         if (MaximizeButton is not null)
-            MaximizeButton.Content = WindowState == WindowState.Maximized ? "\\uE923" : "\\uE922";
+            MaximizeButton.Content = WindowState == WindowState.Maximized ? "\uE923" : "\uE922";
     }
 
     private void AddApk_Click(object sender, RoutedEventArgs e)
