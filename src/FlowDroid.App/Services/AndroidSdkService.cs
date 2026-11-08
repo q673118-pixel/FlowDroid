@@ -103,7 +103,7 @@ public sealed class AndroidSdkService
                 var name = await RunAsync(AdbPath!, new[] { "-s", parts[0], "emu", "avd", "name" },
                     TimeSpan.FromSeconds(5), cancellationToken);
                 var runningAvdName = name.StandardOutput
-                    .Split(new[] { '\\r', '\\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                    .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                     .LastOrDefault();
                 if (string.Equals(runningAvdName, avdName, StringComparison.OrdinalIgnoreCase))
                 {
