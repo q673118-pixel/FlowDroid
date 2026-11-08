@@ -1,10 +1,16 @@
 # FlowDroid
 
+**Current version: 0.5.1**
+
 FlowDroid is a Windows desktop app for creating Android profiles and launching imported APKs in separate Windows windows.
 
-## Version 0.5.0 — interface refresh in progress
+## Version 0.5.1 — personalization and interface controls
 
 ### Implemented
+- Russian and English interface language selection with persistent preferences and live translation of supported interface labels.
+- Application-wide font selection with a live preview (Segoe UI Variable, Segoe UI, Arial, Calibri, Consolas and Georgia).
+- Configurable transition speed and animated selection feedback in settings.
+- Theme changes preserve language and typography preferences.
 - Main window redesigned around the supplied FlowDroid reference: purple Android identity, fixed navigation rail, large hero heading, profile search, profile cards and dedicated empty state.
 - Profile search and alphabetical sorting in the main view.
 - Updated purple design tokens and lightweight hover motion for primary, secondary and navigation controls.
