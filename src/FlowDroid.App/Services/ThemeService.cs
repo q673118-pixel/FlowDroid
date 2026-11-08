@@ -104,16 +104,11 @@ public static class ThemeService
 
     private static void SetBrush(ResourceDictionary resources, string key, string hex)
     {
-        if (resources[key] is SolidColorBrush brush)
-        {
-            brush.Color = (Color)ColorConverter.ConvertFromString(hex);
-            brush.Freeze();
-            resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
-        }
+        var color = (Color)ColorConverter.ConvertFromString(hex);
+        if (resources[key] is SolidColorBrush brush && !brush.IsFrozen)
+            brush.Color = color;
         else
-        {
-            resources[key] = new SolidColorBrush((Color)ColorConverter.ConvertFromString(hex));
-        }
+            resources[key] = new SolidColorBrush(color);
     }
 
     private static AccentPalette GetAccent(string name) => name switch
