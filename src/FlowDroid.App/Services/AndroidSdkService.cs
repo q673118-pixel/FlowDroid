@@ -15,11 +15,13 @@ public sealed class AndroidSdkService
     public string? AdbPath { get; }
     public string? EmulatorPath { get; }
     public string? AaptPath { get; }
+    public string? ScrcpyPath { get; }
 
     public bool IsAvailable => AdbPath is not null && EmulatorPath is not null;
 
     public AndroidSdkService()
     {
+        ScrcpyPath = FindScrcpyPath();
         SdkPath = FindSdkPath();
         if (SdkPath is null) return;
 
@@ -36,6 +38,21 @@ public sealed class AndroidSdkService
                 .Select(path => Path.Combine(path, OperatingSystem.IsWindows() ? "aapt.exe" : "aapt"))
                 .FirstOrDefault(File.Exists);
         }
+    }
+
+    private static string? FindScrcpyPath()
+    {
+        var localTools = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "FlowDroid", "Tools", "scrcpy", "scrcpy.exe");
+        if (File.Exists(localTools)) return localTools;
+
+        var appTools = Path.Combine(AppContext.BaseDirectory, "Tools", "scrcpy", "scrcpy.exe");
+        if (File.Exists(appTools)) return appTools;
+
+        return Environment.GetEnvironmentVariable("PATH")?
+            .Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
+            .Select(folder => Path.Combine(folder.Trim(), "scrcpy.exe"))
+            .FirstOrDefault(File.Exists);
     }
 
     private static string? FindSdkPath()
