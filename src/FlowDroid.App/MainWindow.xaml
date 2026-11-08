@@ -4,7 +4,7 @@
         xmlns:models="clr-namespace:FlowDroid.Models"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="FlowDroid" Height="780" Width="1220" MinHeight="650" MinWidth="980"
-        WindowStartupLocation="CenterScreen" WindowStyle="None" ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen" WindowStyle="None" ResizeMode="CanResize" StateChanged="MainWindow_StateChanged"
         Background="{StaticResource WindowBrush}">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="42" ResizeBorderThickness="6"
@@ -39,7 +39,7 @@
                     <Button Style="{StaticResource WindowControlButton}" Content="&#xE921;"
                             shell:WindowChrome.IsHitTestVisibleInChrome="True"
                             Click="MinimizeWindow_Click" ToolTip="Свернуть"/>
-                    <Button Style="{StaticResource WindowControlButton}" Content="&#xE922;"
+                    <Button x:Name="MaximizeButton" Style="{StaticResource WindowControlButton}" Content="&#xE922;"
                             shell:WindowChrome.IsHitTestVisibleInChrome="True"
                             Click="MaximizeWindow_Click" ToolTip="Развернуть"/>
                     <Button Style="{StaticResource CloseWindowButton}" Content="&#xE8BB;"
