@@ -130,26 +130,82 @@ public sealed class AndroidSdkBootstrapper
         var runtimeRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "FlowDroid", "Runtime", "JDK21");
-        var existing = Directory.Exists(runtimeRoot)
-            ? Directory.EnumerateFiles(runtimeRoot, "java.exe", SearchOption.AllDirectories).FirstOrDefault()
-            : null;
-        if (existing is not null) return Directory.GetParent(Directory.GetParent(existing)!.FullName)!.FullName;
 
-        progress?.Report("Загрузка Java 21 Runtime (нужен для Android SDK)…");
-        var archive = Path.Combine(Path.GetTempPath(), "flowdroid-jdk21.zip");
-        await DownloadAsync(JdkUrl, archive, progress, token);
-        Directory.CreateDirectory(runtimeRoot);
-        ZipFile.ExtractToDirectory(archive, runtimeRoot, overwriteFiles: true);
-        File.Delete(archive);
+        // A JDK counts as installed only if it is complete (java.exe plus the runtime image).
+        var home = FindCompleteJdk(runtimeRoot);
+        if (home is null)
+        {
+            progress?.Report("Загрузка Java 21 Runtime (нужен для Android SDK)…");
+            var archive = Path.Combine(Path.GetTempPath(), "flowdroid-jdk21.zip");
+            await DownloadAsync(JdkUrl, archive, progress, token);
 
-        var java = Directory.EnumerateFiles(runtimeRoot, "java.exe", SearchOption.AllDirectories).FirstOrDefault();
-        if (java is null) throw new InvalidOperationException("В загруженном Java Runtime не найден java.exe.");
-        var javaHome = Directory.GetParent(Directory.GetParent(java)!.FullName)!.FullName;
-        Environment.SetEnvironmentVariable("JAVA_HOME", javaHome, EnvironmentVariableTarget.Process);
+            // Extract into a fresh staging folder and swap it in, so a failed or interrupted run
+            // never leaves a half-written JDK that blocks the next attempt.
+            var staging = runtimeRoot + ".staging";
+            DeleteDirectoryRobust(staging);
+            DeleteDirectoryRobust(runtimeRoot);
+            Directory.CreateDirectory(staging);
+            try
+            {
+                progress?.Report("Распаковка Java 21 Runtime…");
+                await Task.Run(() => ZipFile.ExtractToDirectory(archive, staging, overwriteFiles: true), token);
+                Directory.Move(staging, runtimeRoot);
+            }
+            catch
+            {
+                DeleteDirectoryRobust(staging);
+                throw;
+            }
+            finally
+            {
+                try { File.Delete(archive); } catch (IOException) { }
+            }
+
+            home = FindCompleteJdk(runtimeRoot)
+                ?? throw new InvalidOperationException("В загруженном Java Runtime не найден java.exe.");
+        }
+
+        Environment.SetEnvironmentVariable("JAVA_HOME", home, EnvironmentVariableTarget.Process);
         Environment.SetEnvironmentVariable("PATH",
-            Path.Combine(javaHome, "bin") + Path.PathSeparator +
+            Path.Combine(home, "bin") + Path.PathSeparator +
             Environment.GetEnvironmentVariable("PATH"), EnvironmentVariableTarget.Process);
-        return javaHome;
+        return home;
+    }
+
+    private static string? FindCompleteJdk(string runtimeRoot)
+    {
+        if (!Directory.Exists(runtimeRoot)) return null;
+        foreach (var java in Directory.EnumerateFiles(runtimeRoot, "java.exe", SearchOption.AllDirectories))
+        {
+            var home = Directory.GetParent(Directory.GetParent(java)!.FullName)!.FullName;
+            if (File.Exists(Path.Combine(home, "lib", "modules"))) return home;
+        }
+
+        return null;
+    }
+
+    /// <summary>Deletes a folder even if it holds read-only files; retries briefly for files an antivirus still scans.</summary>
+    private static void DeleteDirectoryRobust(string path)
+    {
+        if (!Directory.Exists(path)) return;
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                foreach (var file in Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories))
+                    File.SetAttributes(file, FileAttributes.Normal);
+                Directory.Delete(path, true);
+                return;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                if (attempt >= 4)
+                    throw new IOException(
+                        $"Не удалось очистить «{path}». Закройте программы, использующие Java из FlowDroid, " +
+                        "и повторите настройку.", ex);
+                Thread.Sleep(400);
+            }
+        }
     }
 
     private async Task<string> EnsureCommandLineToolsAsync(IProgress<string>? progress, CancellationToken token)

@@ -16,10 +16,15 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        WindowAppearance.Apply(this);
         DataContext = new MainViewModel(new DialogService());
         Host.Content = GetView("home");
         StateChanged += (_, _) =>
-            Frame.Padding = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
+        {
+            var maximized = WindowState == WindowState.Maximized;
+            Frame.Padding = maximized ? new Thickness(7) : new Thickness(0);
+            Frame.CornerRadius = maximized ? new CornerRadius(0) : new CornerRadius(18);
+        };
     }
 
     private void Nav_Navigated(object? sender, string key)

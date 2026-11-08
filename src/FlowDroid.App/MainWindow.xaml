@@ -5,13 +5,14 @@
         xmlns:ctl="clr-namespace:FlowDroid.Controls"
         Title="FlowDroid" Width="1280" Height="800" MinWidth="980" MinHeight="640"
         WindowStartupLocation="CenterScreen" Style="{DynamicResource AppWindow}"
-        Background="Transparent" AllowsTransparency="False">
+        WindowStyle="None" Background="{DynamicResource WindowBrush}" UseLayoutRounding="True">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="46" ResizeBorderThickness="6" GlassFrameThickness="0"
                             CornerRadius="0" UseAeroCaptionButtons="False"/>
     </shell:WindowChrome.WindowChrome>
 
-    <Border x:Name="Frame" Background="{DynamicResource WindowBrush}">
+    <Border x:Name="Frame" Background="{DynamicResource WindowBrush}" BorderBrush="{DynamicResource OutlineBrush}"
+            BorderThickness="1" CornerRadius="18" ClipToBounds="True" SnapsToDevicePixels="True">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="300"/>
