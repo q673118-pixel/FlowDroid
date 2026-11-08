@@ -82,13 +82,25 @@ public sealed class AndroidSdkService
         return result.StandardOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
     }
 
-    public async Task StartAvdAsync(
+    public async Task<string> StartAvdAsync(
         string avdName, int ramGb, int cpuCores, string resolution, int dpi,
         string renderer, string orientation, CancellationToken cancellationToken = default)
     {
         EnsureRuntime();
         if (string.IsNullOrWhiteSpace(avdName))
             throw new InvalidOperationException("Сначала выбери Android Virtual Device (AVD).");
+
+        var devices = await RunAsync(AdbPath!, new[] { "devices" }, TimeSpan.FromSeconds(10), cancellationToken);
+        var occupiedPorts = devices.StandardOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+            .Skip(1)
+            .Select(line => line.Split('\t')[0])
+            .Where(serial => serial.StartsWith("emulator-", StringComparison.OrdinalIgnoreCase))
+            .Select(serial => int.TryParse(serial["emulator-".Length..], out var usedPort) ? usedPort : -1)
+            .ToHashSet();
+        var port = Enumerable.Range(0, 64).Select(index => 5554 + index * 2)
+            .FirstOrDefault(candidate => !occupiedPorts.Contains(candidate));
+        if (port == 0) throw new InvalidOperationException("Нет свободного порта для нового Android Emulator.");
+        var serial = "emulator-" + port;
 
         var start = new ProcessStartInfo(EmulatorPath!)
         {
@@ -106,6 +118,7 @@ public sealed class AndroidSdkService
             "-avd", avdName,
             "-no-snapshot-load",
             "-no-boot-anim",
+            "-port", port.ToString(),
             "-memory", (Math.Clamp(ramGb, 1, 16) * 1024).ToString(),
             "-cores", Math.Clamp(cpuCores, 1, 12).ToString(),
             "-gpu", gpuMode
@@ -115,7 +128,7 @@ public sealed class AndroidSdkService
         var process = Process.Start(start);
         if (process is null) throw new InvalidOperationException("Не удалось запустить Android Emulator.");
 
-        var serial = await WaitForBootAsync(TimeSpan.FromMinutes(5), cancellationToken);
+        await WaitForBootAsync(serial, TimeSpan.FromMinutes(5), cancellationToken);
         var dimensions = Regex.Match(resolution, @"(\d+)\s*[×x]\s*(\d+)");
         if (dimensions.Success)
         {
@@ -134,6 +147,29 @@ public sealed class AndroidSdkService
         await RunAsync(AdbPath!, new[] { "-s", serial, "shell", "settings", "put", "system", "user_rotation",
             string.Equals(orientation, "Книжная", StringComparison.OrdinalIgnoreCase) ? "0" : "1" },
             TimeSpan.FromSeconds(15), cancellationToken);
+        return serial;
+    }
+
+    private async Task WaitForBootAsync(string serial, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var devices = await RunAsync(AdbPath!, new[] { "devices" }, TimeSpan.FromSeconds(10), cancellationToken);
+            var isOnline = devices.StandardOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Skip(1)
+                .Select(line => line.Split('\t'))
+                .Any(parts => parts.Length > 1 && parts[0] == serial && parts[1] == "device");
+            if (isOnline)
+            {
+                var boot = await RunAsync(AdbPath!, new[] { "-s", serial, "shell", "getprop", "sys.boot_completed" },
+                    TimeSpan.FromSeconds(10), cancellationToken);
+                if (boot.StandardOutput.Trim() == "1") return;
+            }
+            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+        }
+        throw new TimeoutException("Android Emulator " + serial + " не завершил загрузку. Проверь виртуализацию и системный образ AVD.");
     }
 
     public async Task<string> WaitForBootAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
@@ -167,7 +203,7 @@ public sealed class AndroidSdkService
     }
 
     public async Task<bool> InstallAndLaunchAsync(
-        string apkPath, string resolution, int dpi, int targetFps, string orientation,
+        string apkPath, string? targetSerial, string resolution, int dpi, int targetFps, string orientation,
         CancellationToken cancellationToken = default)
     {
         EnsureAdb();
@@ -176,7 +212,9 @@ public sealed class AndroidSdkService
 
         if (!File.Exists(apkPath)) throw new FileNotFoundException("APK-файл не найден.", apkPath);
 
-        var serial = await FindOnlineEmulatorAsync(cancellationToken);
+        var serial = string.IsNullOrWhiteSpace(targetSerial)
+            ? await FindOnlineEmulatorAsync(cancellationToken)
+            : targetSerial;
         var metadata = await RunAsync(AaptPath, new[] { "dump", "badging", apkPath },
             TimeSpan.FromSeconds(30), cancellationToken);
         var match = Regex.Match(metadata.StandardOutput, @"^package: name='([^']+)'", RegexOptions.Multiline);
