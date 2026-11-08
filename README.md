@@ -4,7 +4,7 @@ FlowDroid is a Windows desktop application for managing isolated Android profile
 
 ## Current status
 
-**Version:** 0.2.0 — redesigned desktop UI and profile management prototype.
+**Version:** 0.2.0 — unified visual system, rounded desktop windows and profile management prototype.
 
 Implemented:
 - C# / WPF desktop shell targeting .NET 8 for Windows.
@@ -45,10 +45,10 @@ Not implemented yet:
 
 Every successful push to `main` builds two downloadable artifacts in GitHub Actions:
 
-- `FlowDroid-Setup` — Windows x64 installer (`FlowDroid-Setup-0.1.1.exe`). Installs per-user under `%LOCALAPPDATA%\\Programs\\FlowDroid`, creates a Start menu shortcut, optionally creates a desktop shortcut, and registers an uninstaller.
+- `FlowDroid-Setup` — Windows x64 installer (`FlowDroid-Setup-0.2.0.exe`). Installs per-user under `%LOCALAPPDATA%\\Programs\\FlowDroid`, creates a Start menu shortcut, optionally creates a desktop shortcut, and registers an uninstaller.
 - `FlowDroid-win-x64` — portable self-contained application build.
 
-The installer does not require administrator rights. Uninstalling FlowDroid does not intentionally remove profile data stored in `%LOCALAPPDATA%\\FlowDroid`.
+The installer includes Russian and English UI and does not require administrator rights. Uninstalling FlowDroid does not intentionally remove profile data stored in `%LOCALAPPDATA%\\FlowDroid`.
 
 ## Build locally
 
