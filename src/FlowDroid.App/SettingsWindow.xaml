@@ -15,7 +15,56 @@
             </Grid>
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,24,0,20">
                 <StackPanel>
-                    <TextBlock Text="Новые профили" FontSize="19" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    <TextBlock Text="Персонализация" FontSize="19" FontWeight="SemiBold" Margin="0,0,0,12"/>
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" CornerRadius="18" Padding="18">
+                        <StackPanel>
+                            <Grid Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="Язык интерфейса" FontWeight="SemiBold" FontSize="14"/>
+                                    <TextBlock Text="Переключение языка приложения." Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,4,0,0"/>
+                                </StackPanel>
+                                <ComboBox x:Name="LanguageBox" Width="190" Height="42" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="Personalization_SelectionChanged">
+                                    <ComboBoxItem Content="Русский" Tag="Русский"/>
+                                    <ComboBoxItem Content="English" Tag="English"/>
+                                </ComboBox>
+                            </Grid>
+                            <Border Height="1" Background="{StaticResource OutlineBrush}" Margin="0,0,0,14"/>
+                            <Grid Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="Шрифт приложения" FontWeight="SemiBold" FontSize="14"/>
+                                    <TextBlock Text="Выберите гарнитуру для всего интерфейса." Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,4,0,0"/>
+                                </StackPanel>
+                                <ComboBox x:Name="FontBox" Width="190" Height="42" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="Personalization_SelectionChanged">
+                                    <ComboBoxItem Content="Segoe UI Variable" Tag="Segoe UI Variable"/>
+                                    <ComboBoxItem Content="Segoe UI" Tag="Segoe UI"/>
+                                    <ComboBoxItem Content="Arial" Tag="Arial"/>
+                                    <ComboBoxItem Content="Calibri" Tag="Calibri"/>
+                                    <ComboBoxItem Content="Consolas" Tag="Consolas"/>
+                                    <ComboBoxItem Content="Georgia" Tag="Georgia"/>
+                                </ComboBox>
+                            </Grid>
+                            <Border x:Name="FontPreviewCard" Background="{StaticResource SurfaceVariantBrush}" CornerRadius="13" Padding="14" Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="Предпросмотр шрифта" Foreground="{StaticResource MutedTextBrush}" FontSize="11"/>
+                                    <TextBlock x:Name="FontPreviewText" Text="FlowDroid — Android emulator" FontSize="20" FontWeight="SemiBold" Margin="0,5,0,0"/>
+                                    <TextBlock Text="0123456789  Aa Бб" Foreground="{StaticResource MutedTextBrush}" FontSize="13" Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Grid>
+                                <StackPanel>
+                                    <TextBlock Text="Скорость анимаций" FontWeight="SemiBold" FontSize="14"/>
+                                    <TextBlock Text="Настройте темп переходов и появления элементов." Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,4,0,0"/>
+                                </StackPanel>
+                                <ComboBox x:Name="MotionSpeedBox" Width="190" Height="42" HorizontalAlignment="Right" VerticalAlignment="Center" SelectionChanged="Personalization_SelectionChanged">
+                                    <ComboBoxItem Content="Медленно" Tag="1.35"/>
+                                    <ComboBoxItem Content="Обычно" Tag="1"/>
+                                    <ComboBoxItem Content="Быстро" Tag="0.75"/>
+                                </ComboBox>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <TextBlock Text="Новые профили" FontSize="19" FontWeight="SemiBold" Margin="0,24,0,12"/>
                     <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1" CornerRadius="16" Padding="18">
                         <StackPanel>
                             <TextBlock Text="Оперативная память по умолчанию (ГБ)"/>
