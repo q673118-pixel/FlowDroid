@@ -26,6 +26,24 @@ public partial class ProfileWindow : Window
         RefreshState();
     }
 
+    private void MinimizeWindow_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+    private void MaximizeWindow_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+        UpdateMaximizeButton();
+    }
+
+    private void CloseWindow_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void ProfileWindow_StateChanged(object? sender, EventArgs e) => UpdateMaximizeButton();
+
+    private void UpdateMaximizeButton()
+    {
+        if (MaximizeButton is not null)
+            MaximizeButton.Content = WindowState == WindowState.Maximized ? "\\uE923" : "\\uE922";
+    }
+
     private void AddApk_Click(object sender, RoutedEventArgs e)
     {
         var picker = new OpenFileDialog
@@ -129,6 +147,7 @@ public partial class ProfileWindow : Window
     private void RefreshState()
     {
         EmptyApkState.Visibility = _apks.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        ApkCountText.Text = _apks.Count switch { 1 => "1 APK", >= 2 and <= 4 => $"{_apks.Count} APK", _ => $"{_apks.Count} APK" };
         ProfileSubtitle.Text = $"{_profile.AndroidVersion} · {_profile.Resolution} · {_profile.RamGb} ГБ RAM";
     }
 }
