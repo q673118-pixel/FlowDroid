@@ -108,3 +108,27 @@ The Applications catalog only lists APKs that are still present on disk. The Fil
 ### Verification note
 
 XAML event-handler references and key page wiring were checked against the committed code. A local .NET build could not be run in this environment because the .NET SDK is unavailable, and no successful GitHub Actions status is available for the latest commit. Treat the Windows Release build as unverified until CI completes.
+
+
+## Stages 7–8 — Android runtime and APK execution
+
+### Stage 7: runtime lifecycle and profile isolation
+- Runtime provisioning is managed by FlowDroid and does not require Android Studio.
+- Each profile receives a separate AVD name derived from its profile ID.
+- Reopening a profile reuses its already-running AVD instead of starting a duplicate instance.
+- RAM, CPU core count and graphics mode are passed to the emulator process at startup.
+- Resolution, density and orientation are applied through ADB after Android finishes booting.
+- A profile can explicitly stop its emulator through ADB; profile data remains on disk.
+- The SDK bootstrapper validates the downloaded Android Command-line Tools archive with SHA-256.
+
+### Stage 8: APK installation and app-window launch
+- Imported APKs are checked as ZIP packages and must contain AndroidManifest.xml.
+- SHA-256 is used to detect duplicate imports within a profile.
+- ADB installs the selected APK into the profile's running Android instance.
+- FlowDroid attempts to open the app in a dedicated scrcpy virtual-display window with the selected display size, DPI and target FPS.
+- If a compatible scrcpy build is unavailable or its window fails to start, FlowDroid falls back to launching the app in the Android Emulator window.
+- APK launch failures are surfaced to the user rather than being silently reported as success.
+- The install-and-launch action prevents repeated clicks while an install is in progress.
+
+### Runtime boundaries
+FlowDroid is a Windows desktop controller around the official Android Emulator, ADB and scrcpy. Android apps are rendered by the Android runtime, not reimplemented as native WPF windows. The dedicated app window is provided by scrcpy's virtual display. Hardware compatibility, boot performance, app compatibility and the first-time SDK download still require testing on a real Windows machine.
