@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace FlowDroid.Services;
 
@@ -11,6 +12,8 @@ public sealed class AndroidSdkBootstrapper
         "https://dl.google.com/android/repository/commandlinetools-win-15859902_latest.zip";
     private const string JdkUrl =
         "https://aka.ms/download-jdk/microsoft-jdk-21-windows-x64.zip";
+    private const string CommandLineToolsSha256 =
+        "90AE805D20434428BFFCB699C290860F19BB5F66A67E6B330067E3DE801FB04A";
 
     private readonly string _root = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -25,8 +28,8 @@ public sealed class AndroidSdkBootstrapper
         var sdkManager = await EnsureCommandLineToolsAsync(progress, cancellationToken);
 
         progress?.Report("Проверка лицензий Android SDK…");
-        await RunBatchAsync(sdkManager, new[] { $"--sdk_root={_root}", "--licenses" },
-            acceptLicenses: true, java, TimeSpan.FromMinutes(3), cancellationToken);
+        await RunBatchInteractiveAsync(sdkManager, new[] { $"--sdk_root={_root}", "--licenses" },
+            java, TimeSpan.FromMinutes(10), cancellationToken);
 
         progress?.Report("Загрузка Android Emulator, ADB и системного образа Android 16…");
         await RunBatchAsync(sdkManager, new[]
@@ -38,7 +41,7 @@ public sealed class AndroidSdkBootstrapper
             "build-tools;36.0.0",
             "platforms;android-36",
             "system-images;android-36;google_apis;x86_64"
-        }, acceptLicenses: true, java, TimeSpan.FromMinutes(45), cancellationToken);
+        }, java, TimeSpan.FromMinutes(45), cancellationToken);
 
         try
         {
@@ -156,6 +159,12 @@ public sealed class AndroidSdkBootstrapper
         var extract = Path.Combine(Path.GetTempPath(), "flowdroid-commandlinetools");
         if (Directory.Exists(extract)) Directory.Delete(extract, true);
         await DownloadAsync(CommandLineToolsUrl, archive, progress, token);
+        using (var stream = File.OpenRead(archive))
+        {
+            var actualHash = Convert.ToHexString(SHA256.HashData(stream));
+            if (!string.Equals(actualHash, CommandLineToolsSha256, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("Проверка SHA-256 Android SDK Command-line Tools не пройдена.");
+        }
         ZipFile.ExtractToDirectory(archive, extract, overwriteFiles: true);
         File.Delete(archive);
 
@@ -193,29 +202,59 @@ public sealed class AndroidSdkBootstrapper
         }
     }
 
-    private static async Task RunBatchAsync(
-        string batchFile, IEnumerable<string> arguments, bool acceptLicenses,
-        string javaHome, TimeSpan timeout, CancellationToken token)
+    private static string BuildBatchCommand(string batchFile, IEnumerable<string> arguments)
     {
         var command = new StringBuilder().Append('"').Append(batchFile).Append('"');
         foreach (var argument in arguments)
             command.Append(' ').Append('"').Append(argument.Replace("\"", "\\\"")).Append('"');
+        return command.ToString();
+    }
 
+    private static ProcessStartInfo CreateBatchStartInfo(string batchFile, IEnumerable<string> arguments, string javaHome)
+    {
         var start = new ProcessStartInfo("cmd.exe")
         {
             UseShellExecute = false,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true,
-            WorkingDirectory = Path.GetDirectoryName(batchFile)!
+            WorkingDirectory = Path.GetDirectoryName(batchFile)!,
+            CreateNoWindow = false
         };
         start.ArgumentList.Add("/d");
         start.ArgumentList.Add("/c");
-        start.ArgumentList.Add(command.ToString());
+        start.ArgumentList.Add(BuildBatchCommand(batchFile, arguments));
         start.Environment["JAVA_HOME"] = javaHome;
         start.Environment["PATH"] = Path.Combine(javaHome, "bin") + Path.PathSeparator +
                                     Environment.GetEnvironmentVariable("PATH");
+        return start;
+    }
+
+    private static async Task RunBatchInteractiveAsync(
+        string batchFile, IEnumerable<string> arguments, string javaHome,
+        TimeSpan timeout, CancellationToken token)
+    {
+        var start = CreateBatchStartInfo(batchFile, arguments, javaHome);
+        using var process = Process.Start(start)
+            ?? throw new InvalidOperationException("Не удалось открыть Android SDK License Manager.");
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+        timeoutCts.CancelAfter(timeout);
+        try { await process.WaitForExitAsync(timeoutCts.Token); }
+        catch (OperationCanceledException) when (!token.IsCancellationRequested)
+        {
+            try { process.Kill(entireProcessTree: true); } catch { }
+            throw new TimeoutException("Проверка лицензий Android SDK превысила допустимое время.");
+        }
+        if (process.ExitCode != 0)
+            throw new InvalidOperationException("Не удалось завершить принятие лицензий Android SDK.");
+    }
+
+    private static async Task RunBatchAsync(
+        string batchFile, IEnumerable<string> arguments, string javaHome,
+        TimeSpan timeout, CancellationToken token)
+    {
+        var start = CreateBatchStartInfo(batchFile, arguments, javaHome);
+        start.RedirectStandardInput = true;
+        start.RedirectStandardOutput = true;
+        start.RedirectStandardError = true;
+        start.CreateNoWindow = true;
 
         using var process = new Process { StartInfo = start };
         var output = new StringBuilder();
@@ -224,11 +263,7 @@ public sealed class AndroidSdkBootstrapper
         if (!process.Start()) throw new InvalidOperationException("Не удалось запустить Android SDK Manager.");
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
-
-        if (acceptLicenses)
-            await process.StandardInput.WriteAsync(string.Concat(Enumerable.Repeat("y\n", 50)));
-        else
-            await process.StandardInput.WriteLineAsync("no");
+        await process.StandardInput.WriteLineAsync("no");
         process.StandardInput.Close();
 
         using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(token);
