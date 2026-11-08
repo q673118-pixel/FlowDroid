@@ -2,7 +2,7 @@
 
 FlowDroid is a Windows desktop app for creating Android profiles and launching imported APKs in separate Windows windows.
 
-## Version 0.4.0 — interface refresh in progress
+## Version 0.5.0 — interface refresh in progress
 
 ### Implemented
 - Main window redesigned around the supplied FlowDroid reference: purple Android identity, fixed navigation rail, large hero heading, profile search, profile cards and dedicated empty state.
@@ -132,3 +132,22 @@ XAML event-handler references and key page wiring were checked against the commi
 
 ### Runtime boundaries
 FlowDroid is a Windows desktop controller around the official Android Emulator, ADB and scrcpy. Android apps are rendered by the Android runtime, not reimplemented as native WPF windows. The dedicated app window is provided by scrcpy's virtual display. Hardware compatibility, boot performance, app compatibility and the first-time SDK download still require testing on a real Windows machine.
+
+## Stages 9–10 — diagnostics, reliability and release readiness
+
+### Stage 9: Android Runtime diagnostics
+- Added a dedicated diagnostics window to each profile.
+- Reports Windows version and process architecture.
+- Shows detected Android SDK, ADB, Emulator, Build-Tools and scrcpy paths.
+- Queries connected Android devices through `adb devices -l`.
+- Runs the Android Emulator acceleration check and includes actionable virtualization guidance when it fails.
+- The report can be copied for troubleshooting.
+
+### Stage 10: runtime reliability and performance
+- If a newly started emulator fails to boot or startup is cancelled, FlowDroid attempts to terminate that emulator process tree instead of leaving a failed background instance.
+- scrcpy virtual-display capability detection is cached per runtime service instance, avoiding a repeated `scrcpy --help` process launch for every APK.
+- Updated application and installer version to 0.5.0.
+- The Windows CI workflow continues to produce both the portable x64 build and per-user installer.
+
+### Verification boundary
+Diagnostics and code-level reliability improvements are implemented. They do not replace a real-device test of Android boot, APK install, scrcpy windows, and shutdown on a Windows 10/11 host. Check the latest GitHub Actions run before distributing the 0.5.0 installer.
