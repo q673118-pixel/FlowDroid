@@ -4,7 +4,7 @@
         Title="Внешний вид FlowDroid" Width="560" Height="570"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         Background="{StaticResource WindowBrush}" Foreground="{StaticResource TextBrush}">
-    <Border Background="{StaticResource WindowBrush}" CornerRadius="20" Padding="30">
+    <Border x:Name="SettingsRoot" Background="{StaticResource WindowBrush}" CornerRadius="20" Padding="30">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
