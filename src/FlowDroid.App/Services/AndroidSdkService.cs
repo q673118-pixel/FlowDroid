@@ -131,7 +131,9 @@ public sealed class AndroidSdkService
         throw new TimeoutException("Android Emulator не завершил загрузку за отведённое время. Проверь виртуализацию и системный образ AVD.");
     }
 
-    public async Task InstallAndLaunchAsync(string apkPath, CancellationToken cancellationToken = default)
+    public async Task<bool> InstallAndLaunchAsync(
+        string apkPath, string resolution, int dpi, int targetFps, string orientation,
+        CancellationToken cancellationToken = default)
     {
         EnsureAdb();
         if (AaptPath is null)
@@ -150,10 +152,58 @@ public sealed class AndroidSdkService
         var install = await RunAsync(AdbPath!, new[] { "-s", serial, "install", "-r", apkPath },
             TimeSpan.FromMinutes(2), cancellationToken);
         if (!install.StandardOutput.Contains("Success", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException($"ADB не подтвердил установку APK.\n{install.StandardOutput}\n{install.StandardError}");
+            throw new InvalidOperationException("ADB не подтвердил установку APK.\n" + install.StandardOutput + "\n" + install.StandardError);
+
+        if (await TryStartScrcpyWindowAsync(serial, packageName, Path.GetFileNameWithoutExtension(apkPath),
+                resolution, dpi, targetFps, orientation, cancellationToken))
+            return true;
 
         await RunAsync(AdbPath!, new[] { "-s", serial, "shell", "monkey", "-p", packageName, "-c",
             "android.intent.category.LAUNCHER", "1" }, TimeSpan.FromSeconds(30), cancellationToken);
+        return false;
+    }
+
+    private async Task<bool> TryStartScrcpyWindowAsync(
+        string serial, string packageName, string title, string resolution, int dpi, int targetFps,
+        string orientation, CancellationToken cancellationToken)
+    {
+        if (ScrcpyPath is null) return false;
+
+        var help = await RunAsync(ScrcpyPath, new[] { "--help" }, TimeSpan.FromSeconds(15), cancellationToken);
+        var helpText = help.StandardOutput + help.StandardError;
+        if (!helpText.Contains("--new-display", StringComparison.Ordinal) ||
+            !helpText.Contains("--start-app", StringComparison.Ordinal))
+            return false;
+
+        var match = Regex.Match(resolution, @"(\d+)\s*[×x]\s*(\d+)");
+        var width = match.Success && int.TryParse(match.Groups[1].Value, out var parsedWidth) ? parsedWidth : 1280;
+        var height = match.Success && int.TryParse(match.Groups[2].Value, out var parsedHeight) ? parsedHeight : 720;
+        if (string.Equals(orientation, "Книжная", StringComparison.OrdinalIgnoreCase) && width > height)
+            (width, height) = (height, width);
+
+        var display = width + "x" + height + "/" + Math.Clamp(dpi, 120, 640);
+        var start = new ProcessStartInfo(ScrcpyPath)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WorkingDirectory = Path.GetDirectoryName(ScrcpyPath)!
+        };
+        var arguments = new[]
+        {
+            "--serial=" + serial,
+            "--new-display=" + display,
+            "--start-app=" + packageName,
+            "--max-fps=" + Math.Clamp(targetFps, 15, 144),
+            "--window-title=FlowDroid - " + title,
+            "--no-vd-system-decorations",
+            "--stay-awake"
+        };
+        foreach (var argument in arguments) start.ArgumentList.Add(argument);
+
+        var process = Process.Start(start);
+        if (process is null) return false;
+        process.Dispose();
+        return true;
     }
 
     private async Task<string> FindOnlineEmulatorAsync(CancellationToken cancellationToken)
