@@ -69,13 +69,13 @@
                         </ComboBox>
                         <TextBlock Text="Графический рендерер"/>
                         <ComboBox x:Name="RendererBox" Margin="0,6,0,18" Height="40">
-                            <ComboBoxItem Content="Автоматически"/><ComboBoxItem Content="OpenGL"/><ComboBoxItem Content="Vulkan"/>
+                            <ComboBoxItem Content="Автоматически"/><ComboBoxItem Content="Аппаратный"/><ComboBoxItem Content="Программный"/>
                         </ComboBox>
                         <Border Background="{StaticResource SurfaceVariantBrush}" CornerRadius="14" Padding="14" Margin="0,0,0,8">
                             <StackPanel>
-                                <TextBlock Text="Параметры пока сохраняются как настройки профиля"
+                                <TextBlock Text="Параметры среды"
                                            FontWeight="SemiBold" FontSize="12"/>
-                                <TextBlock Text="Они начнут влиять на реальную Android-среду после подключения и настройки движка. Сейчас FlowDroid ещё не запускает APK."
+                                <TextBlock Text="RAM, CPU и графический режим применяются при старте эмулятора. Разрешение, DPI и ориентация задаются после загрузки Android. Частота FPS применяется к отдельному окну приложения через scrcpy."
                                            Foreground="{StaticResource MutedTextBrush}" TextWrapping="Wrap" FontSize="12" Margin="0,5,0,0"/>
                             </StackPanel>
                         </Border>
