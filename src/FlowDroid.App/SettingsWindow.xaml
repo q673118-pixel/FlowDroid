@@ -53,6 +53,7 @@
                                 </StackPanel>
                             </Border>
                             <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="190"/></Grid.ColumnDefinitions>
                                 <StackPanel>
                                     <TextBlock Text="Скорость анимаций" FontWeight="SemiBold" FontSize="14"/>
                                     <TextBlock Text="Настройте темп переходов и появления элементов." Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,4,0,0"/>
