@@ -57,12 +57,22 @@ public sealed class AndroidSdkBootstrapper
         if (string.IsNullOrWhiteSpace(safeId)) safeId = Guid.NewGuid().ToString("N")[..8];
         var avdName = "FlowDroid_" + safeId;
 
-        progress?.Report("Создание отдельного виртуального устройства для профиля…");
-        await RunBatchAsync(avdManager, new[]
+        var avdDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            ".android", "avd", avdName + ".avd");
+        if (!Directory.Exists(avdDirectory))
         {
-            "create", "avd", "--force", "--name", avdName,
-            "--package", "system-images;android-36;google_apis;x86_64"
-        }, acceptLicenses: false, java, TimeSpan.FromMinutes(5), cancellationToken);
+            progress?.Report("Создание отдельного виртуального устройства для профиля…");
+            await RunBatchAsync(avdManager, new[]
+            {
+                "create", "avd", "--name", avdName,
+                "--package", "system-images;android-36;google_apis;x86_64"
+            }, java, progress, TimeSpan.FromMinutes(10), cancellationToken);
+        }
+        else
+        {
+            progress?.Report("Найдено существующее виртуальное устройство профиля — данные сохранены.");
+        }
 
         Environment.SetEnvironmentVariable("ANDROID_HOME", _root, EnvironmentVariableTarget.Process);
         Environment.SetEnvironmentVariable("ANDROID_SDK_ROOT", _root, EnvironmentVariableTarget.Process);
