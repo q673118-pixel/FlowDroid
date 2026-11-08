@@ -89,6 +89,7 @@ public static class ThemeService
         SetBrush(resources, "AccentBrush", palette.Accent);
         SetBrush(resources, "AccentHoverBrush", palette.Hover);
         SetBrush(resources, "AccentPressedBrush", palette.Pressed);
+        LocalizationService.ApplyToOpenWindows();
     }
 
     private static void Save()
