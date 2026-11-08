@@ -1,5 +1,5 @@
 #define AppName "FlowDroid"
-#define AppVersion "0.4.0"
+#define AppVersion "0.5.0"
 #define AppPublisher "FlowDroid Project"
 #define AppExeName "FlowDroid.exe"
 
