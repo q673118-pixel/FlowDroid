@@ -67,8 +67,6 @@
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="ButtonBorder" Property="Background" Value="{StaticResource AccentPressedBrush}"/>
-                                <Setter TargetName="ButtonScale" Property="ScaleX" Value="0.985"/>
-                                <Setter TargetName="ButtonScale" Property="ScaleY" Value="0.985"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False"><Setter TargetName="ButtonBorder" Property="Opacity" Value="0.42"/></Trigger>
                         </ControlTemplate.Triggers>
