@@ -54,7 +54,7 @@
                     <TextBlock Text="Импортированные APK" FontSize="17" FontWeight="SemiBold"/>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBlock x:Name="ApkCountText" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,0,12,0"/>
-                        <Button Content="Установить и запустить выбранный APK" Style="{StaticResource SecondaryButton}" Padding="12,7" Click="InstallLaunch_Click"/>
+                        <Button x:Name="InstallLaunchButton" Content="Установить и запустить выбранный APK" Style="{StaticResource SecondaryButton}" Padding="12,7" Click="InstallLaunch_Click"/>
                     </StackPanel>
                 </Grid>
                 <Grid Grid.Row="3">
