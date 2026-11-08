@@ -37,7 +37,10 @@ public static class ThemeService
         {
             ThemeMode = mode,
             Accent = accent,
-            AnimationsEnabled = animationsEnabled
+            AnimationsEnabled = animationsEnabled,
+            Language = _settings.Language,
+            FontFamily = _settings.FontFamily,
+            MotionSpeed = _settings.MotionSpeed
         };
         Apply();
         Save();
