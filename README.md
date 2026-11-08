@@ -71,3 +71,22 @@ https://github.com/q673118-pixel/FlowDroid
 
 ### Current verification status
 The interface changes are committed to `main`. A successful Windows Release build has not yet been confirmed for these latest commits; do not treat the visual refresh as build-verified until the Windows Actions job completes.
+
+
+## Appearance and motion system
+
+The appearance work now includes:
+- Dark, Light and Windows System theme modes.
+- Six accent palettes: Purple, Ocean, Emerald, Sunset, Rose and Midnight.
+- Persisted appearance preferences in the user's local application data.
+- A dedicated appearance dialog reachable from the main-window title bar.
+- A shared motion service for entrance, exit and subtle emphasis transitions.
+- A reduced-motion option that disables the shared code-driven transitions and sets shared XAML motion durations to zero.
+- Shared animation timing tokens for primary, secondary and navigation controls.
+- Entrance transitions for the main content, profile cards, empty states and the appearance dialog.
+
+The theme palette is applied through shared brushes so open views update when a theme is changed. System mode reads the current Windows app-theme preference when FlowDroid applies its theme.
+
+### Verification note
+
+The new appearance and motion files have been committed. A Windows Release build has not been run or confirmed in this environment; the repository's Windows Actions workflow remains the required validation step.
