@@ -116,7 +116,6 @@ public sealed class AndroidSdkService
         foreach (var argument in new[]
         {
             "-avd", avdName,
-            "-no-snapshot-load",
             "-no-boot-anim",
             "-port", port.ToString(),
             "-memory", (Math.Clamp(ramGb, 1, 16) * 1024).ToString(),
