@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using FlowDroid.Models;
+using FlowDroid.Services;
 
 namespace FlowDroid;
 
@@ -11,6 +12,7 @@ public partial class ProfileSettingsWindow : Window
     public ProfileSettingsWindow(EmulatorProfile profile)
     {
         InitializeComponent();
+        WindowAppearance.Apply(this);
         _profile = profile;
 
         Select(ResolutionBox, profile.Resolution);
