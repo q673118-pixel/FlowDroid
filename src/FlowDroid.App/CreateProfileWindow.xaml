@@ -39,7 +39,7 @@
                     <TextBlock Text="Версия Android" FontWeight="SemiBold" Margin="0,0,0,8"/>
                     <ComboBox x:Name="AndroidVersionBox" Height="42" SelectedIndex="0"
                               Background="{StaticResource SurfaceBrush}" Foreground="{StaticResource TextBrush}">
-                        <ComboBoxItem Content="Android 14"/><ComboBoxItem Content="Android 13"/><ComboBoxItem Content="Android 12"/>
+                        <ComboBoxItem Content="Android 16"/><ComboBoxItem Content="Android 15"/><ComboBoxItem Content="Android 14"/>
                     </ComboBox>
                 </StackPanel>
                 <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
