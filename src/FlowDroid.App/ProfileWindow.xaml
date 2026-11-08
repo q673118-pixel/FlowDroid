@@ -4,7 +4,7 @@
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         Title="Профиль — FlowDroid" Width="1000" Height="720" MinWidth="820" MinHeight="580"
         WindowStyle="None" WindowStartupLocation="CenterOwner" Background="{StaticResource WindowBrush}"
-        StateChanged="ProfileWindow_StateChanged">
+        StateChanged="ProfileWindow_StateChanged" Loaded="ProfileWindow_Loaded">
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="42" ResizeBorderThickness="6" GlassFrameThickness="0" UseAeroCaptionButtons="False"/>
     </shell:WindowChrome.WindowChrome>
@@ -21,7 +21,7 @@
                 </StackPanel>
             </Grid>
             <Grid Grid.Row="1" Margin="32,28,32,28">
-                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                 <Grid Grid.Row="0" Margin="0,0,0,25">
                     <StackPanel>
                         <TextBlock x:Name="ProfileTitle" FontSize="28" FontWeight="Bold"/>
@@ -34,12 +34,28 @@
                         <Button Content="+  Добавить APK" Style="{StaticResource PrimaryButton}" Click="AddApk_Click"/>
                     </StackPanel>
                 </Grid>
-                <Grid Grid.Row="1" Margin="0,0,0,14">
+                <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource OutlineBrush}"
+                        BorderThickness="1" CornerRadius="16" Padding="15" Margin="0,0,0,18">
+                    <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,12">
+                            <TextBlock Text="Android Runtime" FontSize="14" FontWeight="SemiBold"/>
+                            <TextBlock x:Name="RuntimeStatusText" Text="Проверка Android SDK…" FontSize="11" Foreground="{StaticResource MutedTextBrush}" Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <ComboBox x:Name="AvdComboBox" Grid.Row="1" Grid.Column="0" Height="40" VerticalContentAlignment="Center" SelectionChanged="AvdComboBox_SelectionChanged"/>
+                        <Button Grid.Row="1" Grid.Column="1" Content="Обновить" Style="{StaticResource SecondaryButton}" Margin="10,0,0,0" Click="RefreshAvds_Click"/>
+                        <Button Grid.Row="1" Grid.Column="2" Content="Запустить среду" Style="{StaticResource PrimaryButton}" Margin="10,0,0,0" Click="StartAvd_Click"/>
+                    </Grid>
+                </Border>
+                <Grid Grid.Row="2" Margin="0,0,0,14">
                     <TextBlock Text="Импортированные APK" FontSize="17" FontWeight="SemiBold"/>
-                    <TextBlock x:Name="ApkCountText" HorizontalAlignment="Right" VerticalAlignment="Center"
-                               Foreground="{StaticResource MutedTextBrush}" FontSize="12"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock x:Name="ApkCountText" VerticalAlignment="Center" Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,0,12,0"/>
+                        <Button Content="Установить и запустить выбранный APK" Style="{StaticResource SecondaryButton}" Padding="12,7" Click="InstallLaunch_Click"/>
+                    </StackPanel>
                 </Grid>
-                <Grid Grid.Row="2">
+                <Grid Grid.Row="3">
                     <Border Background="{StaticResource SurfaceBrush}" CornerRadius="18" Padding="10">
                         <ListView x:Name="ApkList" Background="Transparent" BorderThickness="0"
                                   Foreground="{StaticResource TextBrush}" Padding="4" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
