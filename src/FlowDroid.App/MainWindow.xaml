@@ -106,7 +106,7 @@
                     <!-- Section header and search -->
                     <Grid Grid.Row="1" Margin="0,0,0,18">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="390"/><ColumnDefinition Width="76"/></Grid.ColumnDefinitions>
-                        <TextBlock Text="Ваши профили" FontSize="30" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="ProfileCountText" Text="Ваши профили" FontSize="30" FontWeight="SemiBold" VerticalAlignment="Center"/>
                         <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" CornerRadius="24" Padding="18,0" Height="66">
                             <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="30"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
