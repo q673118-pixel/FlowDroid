@@ -13,6 +13,8 @@ public partial class ProfileWindow : Window
 {
     private readonly EmulatorProfile _profile;
     private readonly ProfileStore _store = new();
+    private readonly AndroidSdkService _android = new();
+    private bool _loadingAvds;
     private readonly ObservableCollection<ApkEntry> _apks;
 
     public ProfileWindow(EmulatorProfile profile)
@@ -43,6 +45,113 @@ public partial class ProfileWindow : Window
     {
         if (MaximizeButton is not null)
             MaximizeButton.Content = WindowState == WindowState.Maximized ? "\uE923" : "\uE922";
+    }
+
+    private async void ProfileWindow_Loaded(object sender, RoutedEventArgs e)
+    {
+        await RefreshAvdsAsync();
+    }
+
+    private async void RefreshAvds_Click(object sender, RoutedEventArgs e)
+    {
+        await RefreshAvdsAsync();
+    }
+
+    private async Task RefreshAvdsAsync()
+    {
+        _loadingAvds = true;
+        AvdComboBox.Items.Clear();
+
+        if (!_android.IsAvailable)
+        {
+            RuntimeStatusText.Text = "Android SDK не найден. Установи Android Studio, Emulator и Platform-Tools.";
+            AvdComboBox.IsEnabled = false;
+            _loadingAvds = false;
+            return;
+        }
+
+        try
+        {
+            var avds = await _android.GetAvdsAsync();
+            foreach (var avd in avds) AvdComboBox.Items.Add(avd);
+
+            if (!string.IsNullOrWhiteSpace(_profile.AndroidVirtualDevice) &&
+                AvdComboBox.Items.Contains(_profile.AndroidVirtualDevice))
+                AvdComboBox.SelectedItem = _profile.AndroidVirtualDevice;
+            else if (AvdComboBox.Items.Count > 0)
+                AvdComboBox.SelectedIndex = 0;
+
+            AvdComboBox.IsEnabled = AvdComboBox.Items.Count > 0;
+            RuntimeStatusText.Text = avds.Count == 0
+                ? "SDK найден, но AVD не созданы. Создай виртуальное устройство в Android Studio."
+                : $"Найдено виртуальных устройств: {avds.Count}. Выбери одно и запусти.";
+        }
+        catch (Exception ex)
+        {
+            RuntimeStatusText.Text = "Не удалось получить список AVD.";
+            MessageBox.Show(ex.Message, "Android Runtime", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally
+        {
+            _loadingAvds = false;
+        }
+    }
+
+    private void AvdComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if (_loadingAvds || AvdComboBox.SelectedItem is not string avd) return;
+        _profile.AndroidVirtualDevice = avd;
+        _store.Update(_profile);
+    }
+
+    private async void StartAvd_Click(object sender, RoutedEventArgs e)
+    {
+        if (AvdComboBox.SelectedItem is not string avd)
+        {
+            MessageBox.Show("Сначала выбери виртуальное устройство. Если список пуст, создай AVD в Android Studio.",
+                "Android Runtime", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        StartAvdButton.IsEnabled = false;
+        RuntimeStatusText.Text = "Запуск Android. Первая загрузка может занять несколько минут…";
+        try
+        {
+            _profile.AndroidVirtualDevice = avd;
+            _store.Update(_profile);
+            await _android.StartAvdAsync(avd);
+            RuntimeStatusText.Text = $"Android готов: {avd}. Теперь выбери APK и нажми «Установить и запустить».";
+        }
+        catch (Exception ex)
+        {
+            RuntimeStatusText.Text = "Не удалось запустить Android Runtime.";
+            MessageBox.Show(ex.Message, "Android Runtime", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            StartAvdButton.IsEnabled = true;
+        }
+    }
+
+    private async void InstallLaunch_Click(object sender, RoutedEventArgs e)
+    {
+        if (ApkList.SelectedItem is not ApkEntry selected)
+        {
+            MessageBox.Show("Сначала выбери APK в списке.", "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        RuntimeStatusText.Text = $"Установка {selected.FileName}…";
+        try
+        {
+            await _android.InstallAndLaunchAsync(selected.StoredPath);
+            RuntimeStatusText.Text = $"{selected.FileName} установлен и запущен в Android Emulator.";
+        }
+        catch (Exception ex)
+        {
+            RuntimeStatusText.Text = "Не удалось установить или запустить APK.";
+            MessageBox.Show(ex.Message, "Запуск APK", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
     }
 
     private void AddApk_Click(object sender, RoutedEventArgs e)
