@@ -43,7 +43,9 @@ public sealed class AndroidSdkService
 
         return candidates.Where(path => !string.IsNullOrWhiteSpace(path))
             .Select(path => Path.GetFullPath(path!))
-            .FirstOrDefault(Directory.Exists);
+            .FirstOrDefault(path => Directory.Exists(path) &&
+                File.Exists(Path.Combine(path, "platform-tools", OperatingSystem.IsWindows() ? "adb.exe" : "adb")) &&
+                File.Exists(Path.Combine(path, "emulator", OperatingSystem.IsWindows() ? "emulator.exe" : "emulator")));
     }
 
     private static Version ParseBuildToolsVersion(string? value) =>
