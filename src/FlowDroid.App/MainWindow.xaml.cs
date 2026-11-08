@@ -13,6 +13,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        WindowAppearance.Apply(this);
         ProfilesList.ItemsSource = _profiles;
         LoadProfiles();
         UpdateProfileCount();
