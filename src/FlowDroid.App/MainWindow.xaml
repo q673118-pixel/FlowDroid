@@ -69,7 +69,7 @@
                         <StackPanel DockPanel.Dock="Bottom">
                             <Button Style="{StaticResource NavButton}" Content="  Настройки" IsEnabled="False"
                                     ToolTip="Глобальные настройки будут добавлены отдельным этапом."/>
-                            <TextBlock Text="Версия 0.2.0" FontSize="10" Foreground="{StaticResource MutedTextBrush}"
+                            <TextBlock Text="Версия 0.3.0" FontSize="10" Foreground="{StaticResource MutedTextBrush}"
                                        Margin="12,14,0,4"/>
                         </StackPanel>
                     </DockPanel>
@@ -101,7 +101,7 @@
                                 BorderThickness="1" CornerRadius="12" Padding="12,8">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="7" Height="7" Fill="#D9A441" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                                <TextBlock Text="Android Runtime не подключён" FontSize="11"
+                                <TextBlock Text="Android Runtime настраивается в профиле" FontSize="11"
                                            Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Border>
