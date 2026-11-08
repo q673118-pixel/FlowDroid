@@ -90,8 +90,28 @@ public sealed class AndroidSdkService
         if (string.IsNullOrWhiteSpace(avdName))
             throw new InvalidOperationException("Сначала выбери Android Virtual Device (AVD).");
 
-        var devices = await RunAsync(AdbPath!, new[] { "devices" }, TimeSpan.FromSeconds(10), cancellationToken);
-        var occupiedPorts = devices.StandardOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+        // Reuse this profile's already-running AVD instead of starting a duplicate emulator.
+        var running = await RunAsync(AdbPath!, new[] { "devices" }, TimeSpan.FromSeconds(10), cancellationToken);
+        foreach (var line in running.StandardOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Skip(1))
+        {
+            var parts = line.Split('\t');
+            if (parts.Length < 2 || parts[1] != "device" || !parts[0].StartsWith("emulator-", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            try
+            {
+                var name = await RunAsync(AdbPath!, new[] { "-s", parts[0], "emu", "avd", "name" },
+                    TimeSpan.FromSeconds(5), cancellationToken);
+                if (string.Equals(name.StandardOutput.Trim(), avdName, StringComparison.OrdinalIgnoreCase))
+                {
+                    await WaitForBootAsync(parts[0], TimeSpan.FromMinutes(5), cancellationToken);
+                    return parts[0];
+                }
+            }
+            catch (InvalidOperationException) { /* Ignore unrelated emulator instances. */ }
+        }
+
+        var occupiedPorts = running.StandardOutput.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
             .Skip(1)
             .Select(line => line.Split('\t')[0])
             .Where(serial => serial.StartsWith("emulator-", StringComparison.OrdinalIgnoreCase))
@@ -226,12 +246,20 @@ public sealed class AndroidSdkService
         if (!install.StandardOutput.Contains("Success", StringComparison.OrdinalIgnoreCase))
             throw new InvalidOperationException("ADB не подтвердил установку APK.\n" + install.StandardOutput + "\n" + install.StandardError);
 
-        if (await TryStartScrcpyWindowAsync(serial, packageName, Path.GetFileNameWithoutExtension(apkPath),
+        var title = Path.GetFileNameWithoutExtension(apkPath);
+        if (await TryStartScrcpyWindowAsync(serial, packageName, title,
                 resolution, dpi, targetFps, orientation, cancellationToken))
             return true;
 
-        await RunAsync(AdbPath!, new[] { "-s", serial, "shell", "monkey", "-p", packageName, "-c",
+        var launch = await RunAsync(AdbPath!, new[] { "-s", serial, "shell", "monkey", "-p", packageName, "-c",
             "android.intent.category.LAUNCHER", "1" }, TimeSpan.FromSeconds(30), cancellationToken);
+        var launchOutput = launch.StandardOutput + "\n" + launch.StandardError;
+        if (launchOutput.Contains("No activities found", StringComparison.OrdinalIgnoreCase) ||
+            launchOutput.Contains("monkey aborted", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("APK установлен, но у него не найдено запускаемое Android-приложение. Возможно, это пакет без главного экрана или APK требует дополнительные split-файлы.");
+        if (!launchOutput.Contains("Events injected", StringComparison.OrdinalIgnoreCase) &&
+            !launchOutput.Contains("Starting", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("APK установлен, но Android не подтвердил запуск.\n" + launchOutput);
         return false;
     }
 
@@ -274,8 +302,13 @@ public sealed class AndroidSdkService
 
         var process = Process.Start(start);
         if (process is null) return false;
-        process.Dispose();
-        return true;
+
+        // A healthy scrcpy window remains alive; immediate exit means startup failed.
+        using (process)
+        {
+            await Task.Delay(TimeSpan.FromMilliseconds(1400), cancellationToken);
+            return !process.HasExited;
+        }
     }
 
     private async Task<string> FindOnlineEmulatorAsync(CancellationToken cancellationToken)
