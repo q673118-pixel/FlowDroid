@@ -23,71 +23,45 @@ public partial class MainWindow : Window
         try
         {
             foreach (var profile in _profileStore.Load())
+            {
+                profile.Apks ??= new List<ApkEntry>();
                 _profiles.Add(profile);
+            }
         }
         catch (Exception ex)
         {
-            MessageBox.Show(
-                $"Не удалось загрузить профили.\n\n{ex.Message}",
-                "FlowDroid",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+            MessageBox.Show($"Не удалось загрузить профили.\n\n{ex.Message}", "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
     private void CreateProfile_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new CreateProfileWindow { Owner = this };
-        if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.ProfileName))
-            return;
-
-        _profiles.Add(new EmulatorProfile
-        {
-            Name = dialog.ProfileName.Trim(),
-            AndroidVersion = dialog.AndroidVersion
-        });
-
+        if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.ProfileName)) return;
+        _profiles.Add(new EmulatorProfile { Name = dialog.ProfileName.Trim(), AndroidVersion = dialog.AndroidVersion });
         SaveProfiles();
         UpdateProfileCount();
     }
 
     private void SaveProfiles()
     {
-        try
-        {
-            _profileStore.Save(_profiles);
-        }
-        catch (Exception ex)
-        {
-            MessageBox.Show(
-                $"Не удалось сохранить профили.\n\n{ex.Message}",
-                "FlowDroid",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
-        }
+        try { _profileStore.Save(_profiles); }
+        catch (Exception ex) { MessageBox.Show($"Не удалось сохранить профили.\n\n{ex.Message}", "FlowDroid", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
 
     private void OpenProfile_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement { Tag: EmulatorProfile profile })
-            return;
-
-        MessageBox.Show(
-            $"Профиль «{profile.Name}» сохранён. Управление APK и запуск Android-среды будут добавлены на следующих этапах.",
-            "FlowDroid",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        if (sender is not FrameworkElement { Tag: EmulatorProfile profile }) return;
+        var dialog = new ProfileWindow(profile) { Owner = this };
+        dialog.ShowDialog();
+        SaveProfiles();
+        ProfilesList.Items.Refresh();
     }
 
     private void UpdateProfileCount()
     {
         var count = _profiles.Count;
-        ProfileCountText.Text = count switch
-        {
-            1 => "1 профиль",
-            >= 2 and <= 4 => $"{count} профиля",
-            _ => $"{count} профилей"
-        };
+        ProfileCountText.Text = count switch { 1 => "1 профиль", >= 2 and <= 4 => $"{count} профиля", _ => $"{count} профилей" };
         EmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 }
