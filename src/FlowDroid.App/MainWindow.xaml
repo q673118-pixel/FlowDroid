@@ -85,7 +85,7 @@
                     <Grid Grid.Row="0" Margin="0,0,0,28">
                         <StackPanel>
                             <TextBlock Text="Профили" FontSize="30" FontWeight="Bold"/>
-                            <TextBlock Text="Твои Android-среды и установленные APK" FontSize="14"
+                            <TextBlock Text="Твои Android-профили и импортированные APK" FontSize="14"
                                        Foreground="{StaticResource MutedTextBrush}" Margin="0,6,0,0"/>
                         </StackPanel>
                         <Button Grid.Column="1" Style="{StaticResource PrimaryButton}"
