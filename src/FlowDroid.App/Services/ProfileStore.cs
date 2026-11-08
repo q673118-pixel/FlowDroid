@@ -31,7 +31,17 @@ public sealed class ProfileStore
     }
 
     public string GetProfileDirectory(Guid profileId) =>
-        Path.Combine(_directory, "Profiles", profileId.ToString("N"), "Apks");
+        Path.Combine(_directory, "Profiles", profileId.ToString("N"));
+
+    public string GetApkDirectory(Guid profileId) =>
+        Path.Combine(GetProfileDirectory(profileId), "Apks");
+
+    public void DeleteProfileData(Guid profileId)
+    {
+        var profileDirectory = GetProfileDirectory(profileId);
+        if (Directory.Exists(profileDirectory))
+            Directory.Delete(profileDirectory, recursive: true);
+    }
 
     public void Update(EmulatorProfile updated)
     {
