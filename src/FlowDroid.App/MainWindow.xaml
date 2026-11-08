@@ -41,7 +41,7 @@
                         <Button Style="{StaticResource NavButton}" Background="{StaticResource AccentPressedBrush}" Foreground="White" IsHitTestVisible="False" Tag="Home" ToolTip="Главная">
                             <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE80F;" FontFamily="Segoe MDL2 Assets" FontSize="23" Width="42"/><TextBlock Text="Главная" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
                         </Button>
-                        <Button Style="{StaticResource NavButton}" IsEnabled="False" Margin="0,8,0,0" ToolTip="Раздел профилей будет выделен после реализации отдельной страницы">
+                        <Button Style="{StaticResource NavButton}" Margin="0,8,0,0" Click="Profiles_Click">
                             <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE8EA;" FontFamily="Segoe MDL2 Assets" FontSize="23" Width="42"/><TextBlock Text="Профили" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
                         </Button>
                         <Button Style="{StaticResource NavButton}" IsEnabled="False" Margin="0,8,0,0" ToolTip="Раздел будет добавлен следующим этапом">
@@ -57,7 +57,7 @@
 
                     <StackPanel Grid.Row="2" Margin="36,0,34,22" VerticalAlignment="Bottom">
                         <Border Height="1" Background="{StaticResource OutlineBrush}" Margin="0,0,0,20"/>
-                        <Button Style="{StaticResource NavButton}" IsEnabled="False" Padding="8,8">
+                        <Button Style="{StaticResource NavButton}" Padding="8,8" Click="About_Click">
                             <StackPanel Orientation="Horizontal"><TextBlock Text="&#xE946;" FontFamily="Segoe MDL2 Assets" FontSize="22" Width="42"/><TextBlock Text="О программе" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/></StackPanel>
                         </Button>
                     </StackPanel>
