@@ -85,7 +85,7 @@
                     <!-- Hero -->
                     <Grid Grid.Row="0" Margin="0,0,0,22">
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="FlowDroid" FontSize="62" FontWeight="Bold" CharacterSpacing="0.5"/>
+                            <TextBlock Text="FlowDroid" FontSize="62" FontWeight="Bold"/>
                             <TextBlock Text="Android-эмулятор для Windows" FontSize="25" FontWeight="SemiBold"
                                        Foreground="{StaticResource MutedTextBrush}" Margin="0,0,0,0"/>
                         </StackPanel>
@@ -156,7 +156,7 @@
                             </ItemsControl>
                         </ScrollViewer>
 
-                        <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" Margin="0,10,0,0">
+                        <StackPanel x:Name="EmptyState" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed" Margin="0,10,0,0">
                             <Canvas Width="150" Height="150" HorizontalAlignment="Center" Margin="0,0,0,16">
                                 <Rectangle Width="78" Height="126" RadiusX="20" RadiusY="20" Stroke="{StaticResource AccentBrush}" StrokeThickness="8"
                                            Canvas.Left="25" Canvas.Top="8" RenderTransformOrigin="0.5,0.5">
@@ -175,7 +175,7 @@
                                     FontFamily="Segoe UI, Segoe MDL2 Assets" FontSize="18" Padding="34,18"
                                     Click="CreateProfile_Click" HorizontalAlignment="Center"/>
                         </StackPanel>
-                        <StackPanel x:Name="NoSearchResults" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                        <StackPanel x:Name="NoSearchResults" Grid.ColumnSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
                             <TextBlock Text="Ничего не найдено" FontSize="23" FontWeight="SemiBold" HorizontalAlignment="Center"/>
                             <TextBlock Text="Измените поисковый запрос и попробуйте снова." FontSize="15"
                                        Foreground="{StaticResource MutedTextBrush}" Margin="0,8,0,0"/>
