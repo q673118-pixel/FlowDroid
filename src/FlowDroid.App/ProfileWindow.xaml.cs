@@ -13,7 +13,8 @@ public partial class ProfileWindow : Window
 {
     private readonly EmulatorProfile _profile;
     private readonly ProfileStore _store = new();
-    private readonly AndroidSdkService _android = new();
+    private AndroidSdkService _android = new();
+    private readonly AndroidSdkBootstrapper _bootstrapper = new();
     private bool _loadingAvds;
     private readonly ObservableCollection<ApkEntry> _apks;
 
@@ -64,8 +65,9 @@ public partial class ProfileWindow : Window
 
         if (!_android.IsAvailable)
         {
-            RuntimeStatusText.Text = "Android SDK не найден. Установи Android Studio, Emulator и Platform-Tools.";
+            RuntimeStatusText.Text = "Android Runtime ещё не установлен. FlowDroid может загрузить необходимые компоненты автоматически — Android Studio не требуется.";
             AvdComboBox.IsEnabled = false;
+            AutoSetupButton.IsEnabled = true;
             _loadingAvds = false;
             return;
         }
@@ -83,8 +85,9 @@ public partial class ProfileWindow : Window
 
             AvdComboBox.IsEnabled = AvdComboBox.Items.Count > 0;
             RuntimeStatusText.Text = avds.Count == 0
-                ? "SDK найден, но AVD не созданы. Создай виртуальное устройство в Android Studio."
-                : $"Найдено виртуальных устройств: {avds.Count}. Выбери одно и запусти.";
+                ? "SDK найден, но виртуальных устройств пока нет. Нажми «Настроить автоматически»."
+                : $"Android Runtime готов · найдено устройств: {avds.Count}.";
+            AutoSetupButton.IsEnabled = avds.Count == 0;
         }
         catch (Exception ex)
         {
@@ -94,6 +97,45 @@ public partial class ProfileWindow : Window
         finally
         {
             _loadingAvds = false;
+        }
+    }
+
+
+    private async void AutoSetup_Click(object sender, RoutedEventArgs e)
+    {
+        var answer = MessageBox.Show(
+            "FlowDroid установит Android Runtime без Android Studio. Будут загружены Java 21, официальные Android SDK Command-line Tools, Emulator, ADB и образ Android 16 x86_64.\n\n" +
+            "Для загрузки потребуется несколько гигабайт свободного места и стабильное подключение к интернету. Перед установкой компонентов нужно принять лицензии Android SDK.\n\nПродолжить?",
+            "Автоматическая настройка Android Runtime",
+            MessageBoxButton.YesNo, MessageBoxImage.Information);
+        if (answer != MessageBoxResult.Yes) return;
+
+        AutoSetupButton.IsEnabled = false;
+        StartAvdButton.IsEnabled = false;
+        AvdComboBox.IsEnabled = false;
+        RuntimeStatusText.Text = "Подготовка Android Runtime…";
+        var progress = new Progress<string>(message => RuntimeStatusText.Text = message);
+
+        try
+        {
+            var avdName = await _bootstrapper.InstallAsync(_profile.Id.ToString("N"), progress);
+            _profile.AndroidVirtualDevice = avdName;
+            _profile.AndroidVersion = "Android 16";
+            _store.Update(_profile);
+            _android = new AndroidSdkService();
+            ProfileSubtitle.Text = $"{_profile.AndroidVersion} · {_profile.Resolution} · {_profile.RamGb} ГБ RAM";
+            await RefreshAvdsAsync();
+            RuntimeStatusText.Text = "Android Runtime установлен. Можно запускать виртуальную среду.";
+        }
+        catch (Exception ex)
+        {
+            RuntimeStatusText.Text = "Не удалось завершить автоматическую настройку.";
+            MessageBox.Show(ex.Message, "Настройка Android Runtime", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            AutoSetupButton.IsEnabled = true;
+            StartAvdButton.IsEnabled = true;
         }
     }
 
@@ -108,7 +150,7 @@ public partial class ProfileWindow : Window
     {
         if (AvdComboBox.SelectedItem is not string avd)
         {
-            MessageBox.Show("Сначала выбери виртуальное устройство. Если список пуст, создай AVD в Android Studio.",
+            MessageBox.Show("Сначала выбери виртуальное устройство или выполни автоматическую настройку Android Runtime.",
                 "Android Runtime", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
