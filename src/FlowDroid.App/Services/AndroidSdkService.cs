@@ -75,6 +75,50 @@ public sealed class AndroidSdkService
     private static Version ParseBuildToolsVersion(string? value) =>
         Version.TryParse(value, out var version) ? version : new Version(0, 0);
 
+    public async Task<string> GetDiagnosticsAsync(CancellationToken cancellationToken = default)
+    {
+        var report = new System.Text.StringBuilder();
+        report.AppendLine("FlowDroid Android Runtime diagnostics");
+        report.AppendLine("OS: " + Environment.OSVersion);
+        report.AppendLine("Architecture: " + System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+        report.AppendLine("SDK: " + (SdkPath ?? "не найден"));
+        report.AppendLine("ADB: " + (AdbPath ?? "не найден"));
+        report.AppendLine("Emulator: " + (EmulatorPath ?? "не найден"));
+        report.AppendLine("Build Tools (aapt): " + (AaptPath ?? "не найден"));
+        report.AppendLine("scrcpy: " + (ScrcpyPath ?? "не найден"));
+        report.AppendLine();
+
+        if (AdbPath is not null)
+        {
+            try
+            {
+                var devices = await RunAsync(AdbPath, new[] { "devices", "-l" }, TimeSpan.FromSeconds(15), cancellationToken);
+                report.AppendLine("ADB devices:");
+                report.AppendLine(devices.StandardOutput.TrimEnd());
+            }
+            catch (Exception ex) { report.AppendLine("ADB check: " + ex.Message); }
+        }
+
+        if (EmulatorPath is not null)
+        {
+            try
+            {
+                var acceleration = await RunAsync(EmulatorPath, new[] { "-accel-check" }, TimeSpan.FromSeconds(15), cancellationToken);
+                report.AppendLine();
+                report.AppendLine("Emulator acceleration:");
+                report.AppendLine((acceleration.StandardOutput + acceleration.StandardError).Trim());
+            }
+            catch (Exception ex)
+            {
+                report.AppendLine();
+                report.AppendLine("Emulator acceleration check: " + ex.Message);
+                report.AppendLine("Проверь включение аппаратной виртуализации и поддержку гипервизора Windows.");
+            }
+        }
+
+        return report.ToString();
+    }
+
     public async Task<IReadOnlyList<string>> GetAvdsAsync(CancellationToken cancellationToken = default)
     {
         EnsureRuntime();
@@ -147,10 +191,18 @@ public sealed class AndroidSdkService
         })
             start.ArgumentList.Add(argument);
 
-        var process = Process.Start(start);
+        using var process = Process.Start(start);
         if (process is null) throw new InvalidOperationException("Не удалось запустить Android Emulator.");
 
-        await WaitForBootAsync(serial, TimeSpan.FromMinutes(5), cancellationToken);
+        try
+        {
+            await WaitForBootAsync(serial, TimeSpan.FromMinutes(5), cancellationToken);
+        }
+        catch
+        {
+            try { if (!process.HasExited) process.Kill(entireProcessTree: true); } catch { }
+            throw;
+        }
         var dimensions = Regex.Match(resolution, @"(\d+)\s*[×x]\s*(\d+)");
         if (dimensions.Success)
         {
