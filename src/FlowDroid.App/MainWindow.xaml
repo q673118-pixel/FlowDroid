@@ -6,84 +6,81 @@
         WindowStartupLocation="CenterScreen" Background="{StaticResource WindowBrush}">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="238"/>
+            <ColumnDefinition Width="224"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}" Padding="18">
+        <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}" Padding="16">
             <DockPanel LastChildFill="True">
                 <StackPanel DockPanel.Dock="Top">
-                    <StackPanel Orientation="Horizontal" Margin="5,7,0,34">
+                    <StackPanel Orientation="Horizontal" Margin="7,8,0,38">
                         <Border Width="38" Height="38" CornerRadius="13" Background="{StaticResource AccentBrush}" VerticalAlignment="Center">
                             <TextBlock Text="F" FontSize="23" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="FlowDroid" FontSize="22" FontWeight="Bold" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                        <TextBlock Text="FlowDroid" FontSize="21" FontWeight="Bold" VerticalAlignment="Center" Margin="11,0,0,0"/>
                     </StackPanel>
-                    <TextBlock Text="РАБОЧЕЕ ПРОСТРАНСТВО" FontSize="10" FontWeight="Bold" Foreground="{StaticResource MutedTextBrush}" Margin="12,0,0,10"/>
+                    <TextBlock Text="РАБОЧЕЕ ПРОСТРАНСТВО" FontSize="10" FontWeight="Bold" Foreground="{StaticResource MutedTextBrush}" Margin="12,0,0,12"/>
                     <Button Style="{StaticResource NavButton}" Background="{StaticResource SurfaceVariantBrush}" Foreground="{StaticResource TextBrush}" Content="  Профили" Margin="0,0,0,5"/>
                     <Button Style="{StaticResource NavButton}" Content="  Приложения" Margin="0,0,0,5"/>
                     <Button Style="{StaticResource NavButton}" Content="  Файлы" Margin="0,0,0,5"/>
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom">
                     <Button Style="{StaticResource NavButton}" Content="  Настройки"/>
-                    <TextBlock Text="Версия 0.1.0 · ранняя сборка" FontSize="10" Foreground="{StaticResource MutedTextBrush}" Margin="12,16,0,4"/>
+                    <TextBlock Text="Версия 0.1.0" FontSize="10" Foreground="{StaticResource MutedTextBrush}" Margin="12,14,0,4"/>
                 </StackPanel>
             </DockPanel>
         </Border>
 
-        <Grid Grid.Column="1" Margin="34,28,34,30">
+        <Grid Grid.Column="1" Margin="32,28,32,28">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="0,0,0,28">
+            <Grid Grid.Row="0" Margin="0,0,0,26">
                 <StackPanel>
                     <TextBlock Text="Профили" FontSize="30" FontWeight="Bold"/>
-                    <TextBlock Text="Отдельные Android-среды для твоих APK и игр" FontSize="14" Foreground="{StaticResource MutedTextBrush}" Margin="0,5,0,0"/>
+                    <TextBlock Text="Твои Android-среды и установленные APK" FontSize="14" Foreground="{StaticResource MutedTextBrush}" Margin="0,5,0,0"/>
                 </StackPanel>
                 <Button Grid.Column="1" Style="{StaticResource PrimaryButton}" Content="+  Создать профиль" HorizontalAlignment="Right" VerticalAlignment="Center" Click="CreateProfile_Click"/>
             </Grid>
 
-            <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" CornerRadius="22" Padding="18" Margin="0,0,0,20">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="Библиотека профилей" FontSize="17" FontWeight="SemiBold"/>
-                        <TextBlock Text="У каждого профиля свои приложения и параметры запуска." FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,4,0,0"/>
-                    </StackPanel>
-                    <TextBlock Grid.Column="1" x:Name="ProfileCountText" Text="0 профилей" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
+            <Grid Grid.Row="1" Margin="0,0,0,18">
+                <TextBlock x:Name="ProfileCountText" Text="0 профилей" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center"/>
+            </Grid>
 
-            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
-                <ItemsControl x:Name="ProfilesList">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate DataType="{x:Type models:EmulatorProfile}">
-                            <Border Width="265" Background="{StaticResource SurfaceBrush}" CornerRadius="22" Padding="18" Margin="0,0,14,14">
-                                <StackPanel>
-                                    <Border Width="46" Height="46" CornerRadius="15" Background="{StaticResource SurfaceVariantBrush}" HorizontalAlignment="Left">
-                                        <TextBlock Text="▣" FontSize="23" Foreground="{StaticResource AccentHoverBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" Margin="0,14,0,3"/>
-                                    <TextBlock Text="{Binding AndroidVersion}" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
-                                    <TextBlock Text="{Binding InstalledApkCount, StringFormat={}{0} APK}" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,14"/>
-                                    <Button Style="{StaticResource PrimaryButton}" Content="Открыть профиль" HorizontalAlignment="Stretch" Click="OpenProfile_Click" Tag="{Binding}"/>
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+            <Grid Grid.Row="2">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="ProfilesList">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:EmulatorProfile}">
+                                <Border Width="270" Background="{StaticResource SurfaceBrush}" CornerRadius="22" Padding="18" Margin="0,0,14,14">
+                                    <StackPanel>
+                                        <Border Width="44" Height="44" CornerRadius="14" Background="{StaticResource SurfaceVariantBrush}" HorizontalAlignment="Left">
+                                            <TextBlock Text="▣" FontSize="22" Foreground="{StaticResource AccentHoverBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" Margin="0,13,0,3"/>
+                                        <TextBlock Text="{Binding AndroidVersion}" FontSize="12" Foreground="{StaticResource MutedTextBrush}"/>
+                                        <TextBlock Text="{Binding InstalledApkCount, StringFormat={}{0} APK}" FontSize="12" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,14"/>
+                                        <Button Style="{StaticResource PrimaryButton}" Content="Открыть профиль" HorizontalAlignment="Stretch" Click="OpenProfile_Click" Tag="{Binding}"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+                <StackPanel x:Name="EmptyState" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
+                    <TextBlock Text="Пока нет профилей" FontSize="21" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Создай профиль, чтобы добавить свои APK." FontSize="13" Foreground="{StaticResource MutedTextBrush}" Margin="0,8,0,16" HorizontalAlignment="Center"/>
+                    <Button Style="{StaticResource PrimaryButton}" Content="Создать профиль" Click="CreateProfile_Click" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
