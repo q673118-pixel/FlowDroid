@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
@@ -114,7 +115,7 @@ public static class ThemeService
             resources[key] = new SolidColorBrush(color);
     }
 
-    private static Color ParseColor(string hex) => (Color)new ColorConverter().ConvertFromString(hex)!;
+    private static Color ParseColor(string hex) => (Color)ColorConverter.ConvertFromString(hex)!;
 
     private static AccentPalette GetAccent(string name) => name switch
     {
