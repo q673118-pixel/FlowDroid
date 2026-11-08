@@ -18,6 +18,35 @@ public partial class MainWindow : Window
         UpdateProfileCount();
     }
 
+    private void MinimizeWindow_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState.Minimized;
+    }
+
+    private void MaximizeWindow_Click(object sender, RoutedEventArgs e)
+    {
+        WindowState = WindowState == WindowState.Maximized
+            ? WindowState.Normal
+            : WindowState.Maximized;
+        UpdateMaximizeButton();
+    }
+
+    private void CloseWindow_Click(object sender, RoutedEventArgs e)
+    {
+        Close();
+    }
+
+    private void MainWindow_StateChanged(object? sender, EventArgs e)
+    {
+        UpdateMaximizeButton();
+    }
+
+    private void UpdateMaximizeButton()
+    {
+        if (MaximizeButton is not null)
+            MaximizeButton.Content = WindowState == WindowState.Maximized ? "\\uE923" : "\\uE922";
+    }
+
     private void LoadProfiles()
     {
         try
