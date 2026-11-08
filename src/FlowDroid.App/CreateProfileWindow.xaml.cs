@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using FlowDroid.Services;
 
 namespace FlowDroid;
 
@@ -11,6 +12,7 @@ public partial class CreateProfileWindow : Window
     public CreateProfileWindow()
     {
         InitializeComponent();
+        WindowAppearance.Apply(this);
         ProfileNameBox.Focus();
         ProfileNameBox.SelectAll();
     }
