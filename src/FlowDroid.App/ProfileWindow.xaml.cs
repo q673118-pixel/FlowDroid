@@ -164,6 +164,9 @@ public partial class ProfileWindow : Window
             _profile.AndroidVirtualDevice = avd;
             _store.Update(_profile);
             _activeSerial = await _android.StartAvdAsync(avd, _profile.RamGb, _profile.CpuCores, _profile.Resolution, _profile.Dpi, _profile.GraphicsRenderer, _profile.Orientation);
+            _profile.Status = "Запущен";
+            _store.Update(_profile);
+            StopAvdButton.IsEnabled = true;
             RuntimeStatusText.Text = $"Android готов: {avd}. Применены параметры профиля. Теперь выбери APK и нажми «Установить и запустить».";
         }
         catch (Exception ex)
@@ -177,6 +180,27 @@ public partial class ProfileWindow : Window
         }
     }
 
+    private async void StopAvd_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_activeSerial)) return;
+        StopAvdButton.IsEnabled = false;
+        RuntimeStatusText.Text = "Остановка Android Runtime…";
+        try
+        {
+            await _android.StopAvdAsync(_activeSerial);
+            _activeSerial = null;
+            _profile.Status = "Остановлен";
+            _store.Update(_profile);
+            RuntimeStatusText.Text = "Android Runtime остановлен. Данные профиля сохранены.";
+        }
+        catch (Exception ex)
+        {
+            RuntimeStatusText.Text = "Не удалось остановить Android Runtime.";
+            MessageBox.Show(ex.Message, "Android Runtime", MessageBoxButton.OK, MessageBoxImage.Warning);
+            StopAvdButton.IsEnabled = true;
+        }
+    }
+
     private async void InstallLaunch_Click(object sender, RoutedEventArgs e)
     {
         if (ApkList.SelectedItem is not ApkEntry selected)
@@ -185,6 +209,7 @@ public partial class ProfileWindow : Window
             return;
         }
 
+        InstallLaunchButton.IsEnabled = false;
         RuntimeStatusText.Text = $"Установка {selected.FileName}…";
         try
         {
@@ -192,12 +217,16 @@ public partial class ProfileWindow : Window
                 selected.StoredPath, _activeSerial, _profile.Resolution, _profile.Dpi, _profile.TargetFps, _profile.Orientation);
             RuntimeStatusText.Text = openedInSeparateWindow
                 ? selected.FileName + " открыт в отдельном окне FlowDroid."
-                : selected.FileName + " запущен в окне Android Emulator. Для отдельного окна установи scrcpy.";
+                : selected.FileName + " запущен в окне Android Emulator. Для отдельного окна требуется совместимая версия scrcpy.";
         }
         catch (Exception ex)
         {
             RuntimeStatusText.Text = "Не удалось установить или запустить APK.";
             MessageBox.Show(ex.Message, "Запуск APK", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            InstallLaunchButton.IsEnabled = true;
         }
     }
 
