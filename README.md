@@ -90,3 +90,21 @@ The theme palette is applied through shared brushes so open views update when a 
 ### Verification note
 
 The new appearance and motion files have been committed. A Windows Release build has not been run or confirmed in this environment; the repository's Windows Actions workflow remains the required validation step.
+
+
+## Workspace pages (stages 5–6)
+
+The main navigation now opens the following implemented workspaces:
+- **Profiles:** profile dashboard and profile workspace with animated entry and APK empty-state transitions.
+- **Applications:** searchable catalog aggregating imported APK files from all profiles; each item opens its owning profile.
+- **Files:** lists managed APK files, shows their owning profile and import metadata, opens the containing file in Explorer, and opens the application data folder.
+- **Settings:** persistent defaults for new profiles (RAM, CPU cores, target FPS), delete-confirmation preference, appearance settings shortcut, and application data-folder access.
+- **About:** application/version information.
+
+Global preferences are stored separately at %LOCALAPPDATA%/FlowDroid/settings.json. Profile-specific data and imported APK files remain in the existing profile storage.
+
+The Applications catalog only lists APKs that are still present on disk. The Files page exposes managed imported APKs; it does not claim to be a general-purpose Windows file manager.
+
+### Verification note
+
+XAML event-handler references and key page wiring were checked against the committed code. A local .NET build could not be run in this environment because the .NET SDK is unavailable, and no successful GitHub Actions status is available for the latest commit. Treat the Windows Release build as unverified until CI completes.
