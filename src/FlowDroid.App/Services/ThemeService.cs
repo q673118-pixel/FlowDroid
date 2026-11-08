@@ -54,6 +54,9 @@ public static class ThemeService
         };
 
         var palette = GetAccent(_settings.Accent);
+        resources["MotionFast"] = new Duration(_settings.AnimationsEnabled ? TimeSpan.FromMilliseconds(120) : TimeSpan.Zero);
+        resources["MotionStandard"] = new Duration(_settings.AnimationsEnabled ? TimeSpan.FromMilliseconds(140) : TimeSpan.Zero);
+        resources["MotionEmphasis"] = new Duration(_settings.AnimationsEnabled ? TimeSpan.FromMilliseconds(160) : TimeSpan.Zero);
         SetColor(resources, "WindowColor", light ? "#F5F2F8" : "#0C0A10");
         SetColor(resources, "SurfaceColor", light ? "#FFFFFF" : "#17131F");
         SetColor(resources, "SurfaceVariantColor", light ? "#EEE8F5" : "#211A2D");
