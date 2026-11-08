@@ -161,8 +161,8 @@ public partial class ProfileWindow : Window
         {
             _profile.AndroidVirtualDevice = avd;
             _store.Update(_profile);
-            await _android.StartAvdAsync(avd);
-            RuntimeStatusText.Text = $"Android готов: {avd}. Теперь выбери APK и нажми «Установить и запустить».";
+            await _android.StartAvdAsync(avd, _profile.RamGb, _profile.CpuCores, _profile.Resolution, _profile.Dpi, _profile.GraphicsRenderer, _profile.Orientation);
+            RuntimeStatusText.Text = $"Android готов: {avd}. Применены параметры профиля. Теперь выбери APK и нажми «Установить и запустить».";
         }
         catch (Exception ex)
         {
