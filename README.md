@@ -1,18 +1,23 @@
 # FlowDroid
 
-FlowDroid is a Windows desktop project for managing Android profiles and launching user-provided APK applications.
+FlowDroid is a Windows desktop application for managing isolated Android profiles and preparing user-provided APKs for app-first launching.
 
 ## Current status
 
-**Version:** 0.1.0 — early prototype.
+**Version:** 0.1.1 — profile and settings prototype.
 
 Implemented:
 - C# / WPF desktop shell targeting .NET 8 for Windows.
 - Flat dark Material-inspired interface with a restrained purple accent.
-- Create and persist profiles in `%LOCALAPPDATA%/FlowDroid/profiles.json`.
-- Profile-specific APK import: selected APK files are copied into the profile's local storage folder.
-- APK list and removal from a profile.
-- Per-profile settings UI for resolution, DPI, orientation, RAM, CPU cores, target FPS and graphics renderer.
+- Persistent profiles in `%LOCALAPPDATA%/FlowDroid/profiles.json`.
+- Profile creation, duplicate-name protection and profile deletion.
+- Separate per-profile APK storage.
+- Multi-select APK import with ZIP/APK structure check.
+- SHA-256 duplicate detection for imported APKs.
+- APK list, file size display and removal.
+- Per-profile display settings: preset or custom resolution, DPI and orientation.
+- Per-profile performance settings: RAM, CPU core count and target FPS.
+- Per-profile graphics renderer preference.
 - GitHub Actions workflow for Windows x64 publishing.
 
 Not implemented yet:
@@ -21,14 +26,16 @@ Not implemented yet:
 - Launching Android apps in separate Windows windows.
 - Applying graphics/performance settings to a running Android runtime.
 - APK package metadata parsing and icon extraction.
+- Hardware capability detection and automatic resource recommendations.
 
-**Important:** importing an APK currently copies and catalogs the file. It does not install or run the APK. Those functions require the Android runtime integration phase.
+**Important:** importing an APK currently validates its archive structure, copies it into the selected profile and catalogs it. It does not install or run the APK. Settings are persisted but are not applied to a runtime until the Android engine integration is implemented.
 
 ## Technology
 
 - C# / WPF
 - .NET 8
 - JSON profile persistence
+- SHA-256 for duplicate APK detection
 - Android runtime and ADB integration to be selected and validated in a later phase
 - GitHub Actions
 
