@@ -144,8 +144,11 @@ public partial class ProfileWindow : Window
         RuntimeStatusText.Text = $"Установка {selected.FileName}…";
         try
         {
-            await _android.InstallAndLaunchAsync(selected.StoredPath);
-            RuntimeStatusText.Text = $"{selected.FileName} установлен и запущен в Android Emulator.";
+            var openedInSeparateWindow = await _android.InstallAndLaunchAsync(
+                selected.StoredPath, _profile.Resolution, _profile.Dpi, _profile.TargetFps, _profile.Orientation);
+            RuntimeStatusText.Text = openedInSeparateWindow
+                ? selected.FileName + " открыт в отдельном окне FlowDroid."
+                : selected.FileName + " запущен в окне Android Emulator. Для отдельного окна установи scrcpy.";
         }
         catch (Exception ex)
         {
