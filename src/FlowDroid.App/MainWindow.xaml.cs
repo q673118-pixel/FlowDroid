@@ -1,18 +1,38 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using FlowDroid.Models;
+using FlowDroid.Services;
 
 namespace FlowDroid;
 
 public partial class MainWindow : Window
 {
     private readonly ObservableCollection<EmulatorProfile> _profiles = new();
+    private readonly ProfileStore _profileStore = new();
 
     public MainWindow()
     {
         InitializeComponent();
         ProfilesList.ItemsSource = _profiles;
+        LoadProfiles();
         UpdateProfileCount();
+    }
+
+    private void LoadProfiles()
+    {
+        try
+        {
+            foreach (var profile in _profileStore.Load())
+                _profiles.Add(profile);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Не удалось загрузить профили.\n\n{ex.Message}",
+                "FlowDroid",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
     }
 
     private void CreateProfile_Click(object sender, RoutedEventArgs e)
@@ -26,7 +46,25 @@ public partial class MainWindow : Window
             Name = dialog.ProfileName.Trim(),
             AndroidVersion = dialog.AndroidVersion
         });
+
+        SaveProfiles();
         UpdateProfileCount();
+    }
+
+    private void SaveProfiles()
+    {
+        try
+        {
+            _profileStore.Save(_profiles);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(
+                $"Не удалось сохранить профили.\n\n{ex.Message}",
+                "FlowDroid",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        }
     }
 
     private void OpenProfile_Click(object sender, RoutedEventArgs e)
@@ -35,7 +73,7 @@ public partial class MainWindow : Window
             return;
 
         MessageBox.Show(
-            $"Профиль «{profile.Name}» создан. Управление APK и запуск Android-среды будут добавлены на следующих этапах.",
+            $"Профиль «{profile.Name}» сохранён. Управление APK и запуск Android-среды будут добавлены на следующих этапах.",
             "FlowDroid",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
@@ -50,5 +88,6 @@ public partial class MainWindow : Window
             >= 2 and <= 4 => $"{count} профиля",
             _ => $"{count} профилей"
         };
+        EmptyState.Visibility = count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 }
