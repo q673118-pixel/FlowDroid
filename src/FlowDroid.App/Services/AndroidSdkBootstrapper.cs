@@ -40,7 +40,14 @@ public sealed class AndroidSdkBootstrapper
             "system-images;android-36;google_apis;x86_64"
         }, acceptLicenses: true, java, TimeSpan.FromMinutes(45), cancellationToken);
 
-        await EnsureScrcpyAsync(progress, cancellationToken);
+        try
+        {
+            await EnsureScrcpyAsync(progress, cancellationToken);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidOperationException)
+        {
+            progress?.Report("Android Runtime установлен. scrcpy не загрузился; приложения пока будут открываться в окне эмулятора.");
+        }
 
         var avdManager = Path.Combine(_root, "cmdline-tools", "latest", "bin", "avdmanager.bat");
         var safeId = new string(profileId.Where(char.IsLetterOrDigit).Take(8).ToArray());
