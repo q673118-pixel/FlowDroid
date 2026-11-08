@@ -167,9 +167,18 @@ public partial class MainWindow : Window
         var isEmpty = total == 0 && !hasQuery;
         var noResults = total > 0 && visible == 0 && hasQuery;
 
-        ProfilesList.Visibility = visible > 0 ? Visibility.Visible : Visibility.Collapsed;
-        CreateProfileTile.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
-        EmptyState.Visibility = isEmpty ? Visibility.Visible : Visibility.Collapsed;
-        NoSearchResults.Visibility = noResults ? Visibility.Visible : Visibility.Collapsed;
+        SetAnimatedVisibility(ProfilesList, visible > 0);
+        SetAnimatedVisibility(CreateProfileTile, isEmpty);
+        SetAnimatedVisibility(EmptyState, isEmpty);
+        SetAnimatedVisibility(NoSearchResults, noResults);
+    }
+
+    private static void SetAnimatedVisibility(UIElement element, bool show)
+    {
+        if (show && element.Visibility != Visibility.Visible)
+            MotionService.Show(element, 180, 6);
+        else if (!show && element.Visibility == Visibility.Visible)
+            MotionService.Hide(element);
+    }
     }
 }
