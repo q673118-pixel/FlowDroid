@@ -18,6 +18,7 @@ public partial class ProfileWindow : Window
     public ProfileWindow(EmulatorProfile profile)
     {
         InitializeComponent();
+        WindowAppearance.Apply(this);
         _profile = profile;
         _profile.Apks ??= new List<ApkEntry>();
         _apks = new ObservableCollection<ApkEntry>(_profile.Apks);
