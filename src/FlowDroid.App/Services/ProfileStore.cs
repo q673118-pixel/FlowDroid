@@ -11,34 +11,38 @@ public sealed class ProfileStore
         PropertyNameCaseInsensitive = true
     };
 
-    private readonly string _directory;
-    private readonly string _filePath;
-
-    public ProfileStore()
-    {
-        _directory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "FlowDroid");
-        _filePath = Path.Combine(_directory, "profiles.json");
-    }
+    private readonly string _directory = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "FlowDroid");
+    private string FilePath => Path.Combine(_directory, "profiles.json");
 
     public IReadOnlyList<EmulatorProfile> Load()
     {
-        if (!File.Exists(_filePath))
+        if (!File.Exists(FilePath))
             return Array.Empty<EmulatorProfile>();
 
-        var json = File.ReadAllText(_filePath);
-        return JsonSerializer.Deserialize<List<EmulatorProfile>>(json, JsonOptions)
+        return JsonSerializer.Deserialize<List<EmulatorProfile>>(File.ReadAllText(FilePath), JsonOptions)
                ?? new List<EmulatorProfile>();
     }
 
     public void Save(IEnumerable<EmulatorProfile> profiles)
     {
         Directory.CreateDirectory(_directory);
+        var temporaryPath = FilePath + ".tmp";
+        File.WriteAllText(temporaryPath, JsonSerializer.Serialize(profiles, JsonOptions));
+        File.Move(temporaryPath, FilePath, overwrite: true);
+    }
 
-        var temporaryPath = _filePath + ".tmp";
-        var json = JsonSerializer.Serialize(profiles, JsonOptions);
-        File.WriteAllText(temporaryPath, json);
-        File.Move(temporaryPath, _filePath, overwrite: true);
+    public string GetProfileDirectory(Guid profileId) =>
+        Path.Combine(_directory, "Profiles", profileId.ToString("N"), "Apks");
+
+    public void Update(EmulatorProfile updated)
+    {
+        var profiles = Load().ToList();
+        var index = profiles.FindIndex(x => x.Id == updated.Id);
+        if (index < 0)
+            profiles.Add(updated);
+        else
+            profiles[index] = updated;
+        Save(profiles);
     }
 }
