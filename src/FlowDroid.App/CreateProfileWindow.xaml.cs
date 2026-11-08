@@ -27,4 +27,6 @@ public partial class CreateProfileWindow : Window
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e) => DialogResult = false;
+
+    private void CloseWindow_Click(object sender, RoutedEventArgs e) => DialogResult = false;
 }
