@@ -114,7 +114,9 @@ public static class ThemeService
             resources[key] = new SolidColorBrush(color);
     }
 
-    private static Color ParseColor(string hex) => (Color)new ColorConverter().ConvertFromString(hex)!;\n\n    private static AccentPalette GetAccent(string name) => name switch
+    private static Color ParseColor(string hex) => (Color)new ColorConverter().ConvertFromString(hex)!;
+
+    private static AccentPalette GetAccent(string name) => name switch
     {
         "Ocean" => new("#3188D8", "#4A9BE8", "#2165A8"),
         "Emerald" => new("#239B70", "#35B486", "#177653"),
