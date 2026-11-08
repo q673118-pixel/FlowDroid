@@ -13,7 +13,7 @@ public sealed class EmulatorProfile
     public int TargetFps { get; set; } = 60;
     public string GraphicsRenderer { get; set; } = "Автоматически";
     public List<ApkEntry> Apks { get; set; } = new();
-    public int InstalledApkCount => Apks.Count;
+    public int InstalledApkCount => Apks?.Count ?? 0;
     public string Status { get; set; } = "Не запускался";
 }
 
@@ -23,5 +23,6 @@ public sealed class ApkEntry
     public string FileName { get; set; } = "";
     public string StoredPath { get; set; } = "";
     public long SizeBytes { get; set; }
+    public string Sha256 { get; set; } = "";
     public DateTime ImportedAtUtc { get; set; } = DateTime.UtcNow;
 }
